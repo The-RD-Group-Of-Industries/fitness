@@ -3,14 +3,34 @@ import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
 
 export default function Upcoming() {
+
+  const option = [
+    {
+      timing: "Today 2PM",
+      title: "Title of Card",
+      with: "Sarah Wilson"
+    },
+    {
+      timing: "Today 2PM",
+      title: "Title of Card",
+      with: "Sarah Wilson"
+    },
+    {
+      timing: "Today 2PM",
+      title: "Title of Card",
+      with: "Sarah Wilson"
+    },
+  ]
   return (
     <View style={css.container}>
       <Text style={css.heading}>Upcoming</Text>
 
-      <View style={css.box}>
-        <Text style={css.text}>Today 2PM</Text>
-        <Text style={css.title}>HIIT Cardio Blast</Text>
-        <Text style={css.trainerName}>With Sarah Wilson</Text>
+    {
+      option.length > 0 && option.map((items, idx) => (
+      <View style={css.box} key={idx}>
+        <Text style={css.text}>{items.timing}</Text>
+        <Text style={css.title}>{items.title}</Text>
+        <Text style={css.trainerName}>With {items.with}</Text>
         <LinearGradient
         colors={['#08027a', '#382eff']}
         start={{x: 1, y: 0.9}}
@@ -22,24 +42,8 @@ export default function Upcoming() {
         </TouchableOpacity>
         </LinearGradient>
       </View>
-
-
-      <View style={css.box}>
-        <Text style={css.text}>Today 2PM</Text>
-        <Text style={css.title}>HIIT Cardio Blast</Text>
-        <Text style={css.trainerName}>With Sarah Wilson</Text>
-        <LinearGradient
-        colors={['#08027a', '#382eff']}
-        start={{x: 1, y: 0.9}}
-        end={{x: 0.3, y: 0.8}}
-        style={css.button}
-        >
-        <TouchableOpacity>
-          <Text style={css.btnText}>Join Now</Text>
-        </TouchableOpacity>
-        </LinearGradient>
-      </View>
-      
+      ))
+    }
     </View>
   );
 }

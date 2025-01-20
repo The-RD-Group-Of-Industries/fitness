@@ -4,29 +4,47 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 
 export default function Trainer() {
   const color = useThemeColor({ light: "black", dark: "white" }, 'text');
+
+  const option = [
+    {
+        name: "Salman Khan",
+        imageLink: "https://reactnative.dev/img/tiny_logo.png",
+    },
+    {
+        name: "Adarsh Pandit",
+        imageLink: "https://reactnative.dev/img/tiny_logo.png",
+    },
+    {
+        name: "Rekha Ji",
+        imageLink: "https://reactnative.dev/img/tiny_logo.png",
+    },
+  ]
   return (
     <View style={style.main}>
       <Text style={[style.heading, {color}]}>Featured Trainer</Text>
 
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{flex: 1}}>
-       
-        <View style={style.box}>
-            <View style={style.image}>
-                <Image 
-                alt='avatar'
-                source={{uri: "https://reactnative.dev/img/tiny_logo.png"}}
-                style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover'
-                }}
-                width={1080}
-                height={1080}
-                />
+        {
+            option.length > 0 && option.map((items, idx) => (
+                <View style={style.box} key={idx}>
+                <View style={style.image}>
+                    <Image 
+                    alt='avatar'
+                    source={{uri: `${items.imageLink}`}}
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                    }}
+                    width={1080}
+                    height={1080}
+                    />
+                </View>
+                <Text style={style.title}>{items.name}</Text>
             </View>
-            <Text style={style.title}>Amit Looda</Text>
-        </View>
-
+    
+            ))
+        }
     </ScrollView>
     </View>
   )
