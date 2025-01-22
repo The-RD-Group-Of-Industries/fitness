@@ -18,7 +18,9 @@ export default function HomeScreen() {
           stop_1: "teal",
           stop_2: "seagreen",
         },
-        onClick: () => {}
+        onClick: () => {
+          router.push("/chats")
+        }
       },
       {
         title: "Book Session",
@@ -44,6 +46,7 @@ export default function HomeScreen() {
   return (
   <ScrollView 
   contentContainerStyle={styles.contentContainer}
+  showsVerticalScrollIndicator={false}
   // style={styles.container}
   style={{padding: 10, paddingVertical: 30}}>
    <ScrollView horizontal style={styles.col} showsHorizontalScrollIndicator={false}>

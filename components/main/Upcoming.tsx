@@ -1,51 +1,78 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import React from "react";
-import { LinearGradient } from "expo-linear-gradient";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native"
+import React, { useEffect, useState } from "react"
+import { LinearGradient } from "expo-linear-gradient"
+import axios from "axios"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import { format } from "date-fns"
+
+interface Schedule {
+  id: string
+  date: string
+  startTime: string
+  scheduleLink: string
+  scheduleSubject: string
+  trainer: {
+    name: string
+  }
+}
 
 export default function Upcoming() {
+  const [schedules, setSchedules] = useState<Schedule[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const option = [
-    {
-      timing: "Today 2PM",
-      title: "Title of Card",
-      with: "Sarah Wilson"
-    },
-    {
-      timing: "Today 2PM",
-      title: "Title of Card",
-      with: "Sarah Wilson"
-    },
-    {
-      timing: "Today 2PM",
-      title: "Title of Card",
-      with: "Sarah Wilson"
-    },
-  ]
+  useEffect(() => {
+    fetchUpcomingSchedules()
+  }, [])
+
+  const fetchUpcomingSchedules = async () => {
+    try {
+      const token = await AsyncStorage.getItem("userToken")
+      const response = await axios.get("http://localhost:3000/api/mobile/schedule/upcoming", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      setSchedules(response.data.schedules)
+    } catch (error) {
+      console.error("Error fetching upcoming schedules:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <View style={css.loadingContainer}>
+        <ActivityIndicator size="large" color="#382eff" />
+      </View>
+    )
+  }
+
   return (
     <View style={css.container}>
       <Text style={css.heading}>Upcoming</Text>
 
-    {
-      option.length > 0 && option.map((items, idx) => (
-      <View style={css.box} key={idx}>
-        <Text style={css.text}>{items.timing}</Text>
-        <Text style={css.title}>{items.title}</Text>
-        <Text style={css.trainerName}>With {items.with}</Text>
-        <LinearGradient
-        colors={['#08027a', '#382eff']}
-        start={{x: 1, y: 0.9}}
-        end={{x: 0.3, y: 0.8}}
-        style={css.button}
-        >
-        <TouchableOpacity>
-          <Text style={css.btnText}>Join Now</Text>
-        </TouchableOpacity>
-        </LinearGradient>
-      </View>
-      ))
-    }
+      {schedules.length > 0 ? (
+        schedules.map((schedule) => (
+          <View style={css.box} key={schedule.id}>
+            <Text style={css.text}>{format(new Date(schedule.startTime), "MMM d, h:mm a")}</Text>
+            <Text style={css.title}>{schedule.scheduleSubject}</Text>
+            <Text style={css.trainerName}>With {schedule.trainer.name}</Text>
+            <LinearGradient
+              colors={["#08027a", "#382eff"]}
+              start={{ x: 1, y: 0.9 }}
+              end={{ x: 0.3, y: 0.8 }}
+              style={css.button}
+            >
+              <TouchableOpacity onPress={() => window.open(schedule.scheduleLink, '_blank')}>
+                <Text style={css.btnText}>Join Now</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          </View>
+        ))
+      ) : (
+        <Text style={css.noSchedules}>No upcoming schedules</Text>
+      )}
     </View>
-  );
+  )
 }
 
 const css = StyleSheet.create({
@@ -96,7 +123,6 @@ const css = StyleSheet.create({
     width: "100%",
     paddingVertical: 10,
     paddingHorizontal: 10,
-    // backgroundColor: 'red',
     textAlign: "center",
     borderRadius: 8,
   },
@@ -106,4 +132,15 @@ const css = StyleSheet.create({
     fontWeight: "600",
     fontSize: 18,
   },
-});
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  noSchedules: {
+    color: "white",
+    fontSize: 18,
+    textAlign: "center",
+    marginTop: 20,
+  },
+})

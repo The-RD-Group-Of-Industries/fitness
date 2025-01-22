@@ -1,33 +1,38 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-const CustomDropdown = ({data}: {
-    data: {label: string, value: string}[]
-}) => {
+interface DropdownProps {
+  data: { label: string; value: string }[];
+  onSelect: (value: string) => void;
+}
+
+const CustomDropdown: React.FC<DropdownProps> = ({ data, onSelect }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedValue, setSelectedValue] = useState("Select an Trainer");
+  const [selectedItem, setSelectedItem] = useState<string | null>("Select a Trainer");
 
-  const toggleDropdown = () => setIsOpen(!isOpen);
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
 
   const handleSelect = (item: { label: string; value: string }) => {
-    setSelectedValue(item.label);
+    setSelectedItem(item.label);
     setIsOpen(false);
+    onSelect(item.value);
   };
 
   return (
-    <View style={styles.dropdownContainer}>
-      <TouchableOpacity style={styles.dropdown} onPress={toggleDropdown}>
-        <Text style={styles.dropdownText}>{selectedValue}</Text>
+    <View style={styles.container}>
+      <TouchableOpacity style={styles.header} onPress={toggleDropdown}>
+        <Text style={styles.headerText}>{selectedItem || 'Select an item'}</Text>
+        <Ionicons name={isOpen ? 'chevron-up' : 'chevron-down'} size={24} color="white" />
       </TouchableOpacity>
       {isOpen && (
-        <ScrollView
-          style={styles.dropdownList}
-          nestedScrollEnabled={true}
-        >
-          {data.map((item) => (
+        <ScrollView style={styles.dropdown}>
+          {data.map((item, index) => (
             <TouchableOpacity
-              key={item.value}
-              style={styles.dropdownItem}
+              key={index}
+              style={styles.item}
               onPress={() => handleSelect(item)}
             >
               <Text style={styles.itemText}>{item.label}</Text>
@@ -40,10 +45,10 @@ const CustomDropdown = ({data}: {
 };
 
 const styles = StyleSheet.create({
-  dropdownContainer: {
+  container: {
     marginVertical: 10,
   },
-  dropdown: {
+  header: {
     width: "100%",
     padding: 14,
     borderWidth: 1,
@@ -51,12 +56,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "transparent",
   },
-  dropdownText: {
-    color: "white",
+  headerText: {
+    color: 'white',
     fontSize: 16,
     fontWeight: "700",
   },
-  dropdownList: {
+  dropdown: {
     maxHeight: 200,
     marginTop: 5,
     borderWidth: 1,
@@ -65,7 +70,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#000000",
     overflow: "hidden",
   },
-  dropdownItem: {
+  item: {
     padding: 14,
   },
   itemText: {

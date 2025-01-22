@@ -1,102 +1,136 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
-import React from "react";
-import { Stack } from "expo-router";
-import CustomDropdown from "@/components/ui/DropDown";
-import { LinearGradient } from "expo-linear-gradient";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform } from "react-native"
+import type React from "react"
+import { useEffect, useState } from "react"
+import { Stack } from "expo-router"
+import CustomDropdown from "@/components/ui/DropDown"
+import { LinearGradient } from "expo-linear-gradient"
+import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker"
+import axios from "axios"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+
+interface Trainer {
+  id: string
+  name: string | null
+  email: string
+}
+
+interface DropdownItem {
+  label: string
+  value: string
+}
 
 const DisplayBox = ({
   title,
-  data,
+  children,
   long = false,
 }: {
-  title: string;
-  data: any[];
-  long?: boolean;
+  title: string
+  children: React.ReactNode
+  long?: boolean
 }) => (
   <View style={styles.box}>
     <Text style={styles.text}>{title}</Text>
-    <View style={long ? styles.col : styles.row}>
-      {!long
-        ? data.length > 0 &&
-          data.map((items, key) => (
-            <TouchableOpacity key={key} style={styles.smallBox}>
-              <Text style={styles.txt}>{items?.title}</Text>
-              {items.time && <Text style={styles.subTxt}>{items?.time}</Text>}
-            </TouchableOpacity>
-          ))
-        : data.length > 0 &&
-          data.map((items, key) => (
-            <TouchableOpacity key={key} style={styles.longBox}>
-              <Text style={styles.charge}>{items.charge}/hr</Text>
-              <Text style={[styles.text]}>{items.title}</Text>
-              <Text style={styles.subTxt}>{items.subTitle}</Text>
-            </TouchableOpacity>
-          ))}
-    </View>
+    <View style={long ? styles.col : styles.row}>{children}</View>
   </View>
-);
+)
 
-export default function session() {
-  const timing = [
-    {
-      title: "MON",
-      time: "10:00 AM",
-    },
-    {
-      title: "MON",
-      time: "10:00 AM",
-    },
-    {
-      title: "MON",
-      time: "10:00 AM",
-    },
-  ];
+export default function Session() {
+  const [trainers, setTrainers] = useState<DropdownItem[]>([])
+  const [selectedTrainer, setSelectedTrainer] = useState("")
+  const [date, setDate] = useState(new Date())
+  const [startTime, setStartTime] = useState(new Date())
+  const [endTime, setEndTime] = useState(new Date())
+  const [sessionType, setSessionType] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false)
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false)
 
-  const duration = [
-    {
-      title: "30min",
-      main: 30,
-    },
-    {
-      title: "30min",
-      main: 30,
-    },
-    {
-      title: "30min",
-      main: 30,
-    },
-  ];
-  const session = [
+  useEffect(() => {
+    fetchTrainers()
+  }, [])
+
+  const fetchTrainers = async () => {
+    try {
+      const response = await axios.get<{ users: Trainer[] }>("http://localhost:3000/api/mobile/users/trainer")
+      const formattedTrainers: DropdownItem[] = response.data.users.map((trainer: Trainer) => ({
+        label: trainer.name || trainer.email,
+        value: trainer.id,
+      }))
+      setTrainers(formattedTrainers)
+    } catch (error) {
+      console.error("Error fetching trainers:", error)
+      Alert.alert("Error", "Failed to fetch trainers")
+    }
+  }
+
+  const handleSubmit = async () => {
+    if (!selectedTrainer || !sessionType) {
+      Alert.alert("Error", "Please select a trainer and session type")
+      return
+    }
+
+    try {
+      setLoading(true)
+      const token = await AsyncStorage.getItem("userToken")
+      await axios.post(
+        "http://localhost:3000/api/mobile/schedule/create",
+        {
+          date: date.toISOString(),
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
+          scheduleSubject: "Training Session",
+          trainerId: selectedTrainer,
+          sessionType,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      )
+      Alert.alert("Success", "Session scheduled successfully!")
+    } catch (error) {
+      console.error("Error scheduling session:", error)
+      Alert.alert("Error", "Failed to schedule session")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const sessionTypes = [
     {
       title: "Personal Training",
-      subTitle: "1-1 session",
+      subTitle: "1-on-1 session",
       charge: 299,
+      value: "personal",
     },
     {
-      title: "Personal Training",
-      subTitle: "1-1 session",
-      charge: 299,
+      title: "Group Training",
+      subTitle: "Up to 5 people",
+      charge: 199,
+      value: "group",
     },
-    {
-      title: "Personal Training",
-      subTitle: "1-1 session",
-      charge: 299,
-    },
-  ];
-  const items = [
-    { label: "NIKKI", value: "NIKKI" },
-    { label: "ROHINI", value: "2" },
-    { label: "ASHANA", value: "3" },
-    { label: "RUBY", value: "4" },
-    { label: "AMRIK KAUR", value: "5" },
-    { label: "ROHAN", value: "6" },
-  ];
+  ]
+
+  const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    const currentDate = selectedDate || date
+    setShowDatePicker(Platform.OS === "ios")
+    setDate(currentDate)
+  }
+
+  const onChangeStartTime = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    const selectedTime = selectedDate || startTime
+    setShowStartTimePicker(Platform.OS === "ios")
+    setStartTime(selectedTime)
+  }
+
+  const onChangeEndTime = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    const selectedTime = selectedDate || endTime
+    setShowEndTimePicker(Platform.OS === "ios")
+    setEndTime(selectedTime)
+  }
+
   return (
     <>
       <Stack.Screen
@@ -104,51 +138,103 @@ export default function session() {
           headerTitle: "Book a session",
         }}
       />
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.contentContainer}
-      >
+      <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={styles.contentContainer}>
         <View style={styles.container}>
           <View style={styles.child}>
             <Text style={styles.heading}>Book Training Session</Text>
-            <DisplayBox title="Available Session" data={timing} />
-            <DisplayBox title="Session Type" data={session} long />
-            <CustomDropdown data={items} />
-            <DisplayBox title="Duration" data={duration} />
-                    <LinearGradient
-                    colors={['#08027a', '#382eff']}
-                    start={{x: 1, y: 0.9}}
-                    end={{x: 0.3, y: 0.8}}
-                    style={styles.button}
-                    >
-                    <TouchableOpacity>
-                      <Text style={styles.btnText}>Join Now</Text>
-                    </TouchableOpacity>
-                    </LinearGradient>
+
+            <DisplayBox title="Schedule">
+              <View style={styles.dateTimeContainer}>
+                <TouchableOpacity style={styles.dateTimePicker} onPress={() => setShowDatePicker(true)}>
+                  <Text style={styles.dateTimeLabel}>Date:</Text>
+                  <Text style={styles.dateTimeValue}>{date.toLocaleDateString()}</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.dateTimePicker} onPress={() => setShowStartTimePicker(true)}>
+                  <Text style={styles.dateTimeLabel}>Start Time:</Text>
+                  <Text style={styles.dateTimeValue}>{startTime.toLocaleTimeString()}</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.dateTimePicker} onPress={() => setShowEndTimePicker(true)}>
+                  <Text style={styles.dateTimeLabel}>End Time:</Text>
+                  <Text style={styles.dateTimeValue}>{endTime.toLocaleTimeString()}</Text>
+                </TouchableOpacity>
+              </View>
+            </DisplayBox>
+
+            {showDatePicker && (
+              <DateTimePicker
+                testID="datePicker"
+                value={date}
+                mode="date"
+                is24Hour={true}
+                display="default"
+                onChange={onChangeDate}
+              />
+            )}
+            {showStartTimePicker && (
+              <DateTimePicker
+                testID="startTimePicker"
+                value={startTime}
+                mode="time"
+                is24Hour={true}
+                display="default"
+                onChange={onChangeStartTime}
+              />
+            )}
+            {showEndTimePicker && (
+              <DateTimePicker
+                testID="endTimePicker"
+                value={endTime}
+                mode="time"
+                is24Hour={true}
+                display="default"
+                onChange={onChangeEndTime}
+              />
+            )}
+
+            <DisplayBox title="Session Type" long>
+              {sessionTypes.map((type, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.longBox, sessionType === type.value && styles.selectedBox]}
+                  onPress={() => setSessionType(type.value)}
+                >
+                  <Text style={styles.charge}>₹{type.charge}/hr</Text>
+                  <Text style={styles.text}>{type.title}</Text>
+                  <Text style={styles.subTxt}>{type.subTitle}</Text>
+                </TouchableOpacity>
+              ))}
+            </DisplayBox>
+
+            <CustomDropdown data={trainers} onSelect={(value: string) => setSelectedTrainer(value)} />
+
+            <LinearGradient
+              colors={["#08027a", "#382eff"]}
+              start={{ x: 1, y: 0.9 }}
+              end={{ x: 0.3, y: 0.8 }}
+              style={styles.button}
+            >
+              <TouchableOpacity onPress={handleSubmit} disabled={loading}>
+                <Text style={styles.btnText}>{loading ? "Scheduling..." : "Schedule Session"}</Text>
+              </TouchableOpacity>
+            </LinearGradient>
           </View>
         </View>
       </ScrollView>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   contentContainer: {
     paddingBottom: 100,
   },
-  dropwon: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#1e1e1e",
-  },
   container: {
     justifyContent: "center",
     alignItems: "flex-start",
-    height: 'auto',
-    position: 'relative',
-    // marginBottom: 20,
-
+    height: "auto",
+    position: "relative",
   },
   child: {
     paddingHorizontal: 10,
@@ -182,17 +268,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  smallBox: {
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#3082fc",
-    padding: 10,
-    paddingHorizontal: 14,
-    marginVertical: 4,
-    borderRadius: 6,
-    marginTop: 6,
-  },
   longBox: {
     width: "auto",
     height: "auto",
@@ -204,6 +279,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     position: "relative",
   },
+  selectedBox: {
+    backgroundColor: "#3082fc20",
+    borderColor: "#3082fc",
+    borderWidth: 2,
+  },
   charge: {
     color: "#1277fc",
     fontSize: 16,
@@ -212,34 +292,17 @@ const styles = StyleSheet.create({
     right: 8,
     top: 10,
   },
-  txt: {
-    color: "white",
-    fontSize: 16,
-  },
   subTxt: {
     color: "gray",
     fontSize: 14,
   },
-  menuContainer: {
-    backgroundColor: "#1e1e1e",
-    borderColor: "#3082fc",
-    borderWidth: 1,
-  },
-  selectedText: {
-    color: "white",
-    marginTop: 16,
-    fontSize: 16,
-  },
   button: {
-    position: "absolute",
-    bottom: -70,
-    left: 10,
-    width: "95%",
+    width: "100%",
     paddingVertical: 15,
     paddingHorizontal: 10,
-    // backgroundColor: 'red',
     textAlign: "center",
     borderRadius: 8,
+    marginTop: 20,
   },
   btnText: {
     textAlign: "center",
@@ -247,4 +310,26 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 18,
   },
-});
+  dateTimeContainer: {
+    gap: 10,
+    width: "100%",
+  },
+  dateTimePicker: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#3082fc",
+    borderRadius: 6,
+  },
+  dateTimeLabel: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  dateTimeValue: {
+    color: "white",
+    fontSize: 16,
+  },
+})
