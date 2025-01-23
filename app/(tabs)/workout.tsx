@@ -50,7 +50,7 @@ export default function TabTwoScreen() {
   ];
   return (
     <View style={styles.container}>
-    <ScrollView>
+    <ScrollView showsVerticalScrollIndicator={false}>
 
       <View style={styles.child}>
         <Text style={[styles.heading, { color }]}>Today's Workout</Text>
