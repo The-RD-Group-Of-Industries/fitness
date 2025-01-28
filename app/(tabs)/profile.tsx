@@ -22,7 +22,7 @@ export default function TabTwoScreen() {
     const fetchUserData = async () => {
       try {
         const token = await AsyncStorage.getItem("userToken")
-        const response = await axios.get("http://localhost:3000/api/mobile/user", {
+        const response = await axios.get("https://fitness-evolution-kohl.vercel.app/api/mobile/user", {
           headers: { Authorization: `Bearer ${token}` },
         })
         setUserData(response.data.user)

@@ -28,7 +28,7 @@ export default function ChatsScreen() {
   const fetchTrainers = async () => {
     try {
       const token = await AsyncStorage.getItem("userToken")
-      const response = await axios.get("http://localhost:3000/api/mobile/users/trainer", {
+      const response = await axios.get("https://fitness-evolution-kohl.vercel.app/api/mobile/users/trainer", {
         headers: { Authorization: `Bearer ${token}` },
       })
       setTrainers(response.data.users)

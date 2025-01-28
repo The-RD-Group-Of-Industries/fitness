@@ -52,7 +52,7 @@ export default function Session() {
 
   const fetchTrainers = async () => {
     try {
-      const response = await axios.get<{ users: Trainer[] }>("http://localhost:3000/api/mobile/users/trainer")
+      const response = await axios.get<{ users: Trainer[] }>("https://fitness-evolution-kohl.vercel.app/api/mobile/users/trainer")
       const formattedTrainers: DropdownItem[] = response.data.users.map((trainer: Trainer) => ({
         label: trainer.name || trainer.email,
         value: trainer.id,
@@ -74,7 +74,7 @@ export default function Session() {
       setLoading(true)
       const token = await AsyncStorage.getItem("userToken")
       await axios.post(
-        "http://localhost:3000/api/mobile/schedule/create",
+        "https://fitness-evolution-kohl.vercel.app/api/mobile/schedule/create",
         {
           date: date.toISOString(),
           startTime: startTime.toISOString(),

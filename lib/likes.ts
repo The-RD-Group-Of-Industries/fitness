@@ -1,7 +1,7 @@
 import axios from "axios"
 
 export async function likePost(postId: string, userId: string) {
-  const response = await axios.post("http://localhost:3000/api/likes", {
+  const response = await axios.post("https://fitness-evolution-kohl.vercel.app/api/likes", {
     postId,
     userId,
   })
@@ -9,13 +9,13 @@ export async function likePost(postId: string, userId: string) {
 }
 
 export async function unlikePost(postId: string, userId: string) {
-  const response = await axios.delete("http://localhost:3000/api/likes", {
+  const response = await axios.delete("https://fitness-evolution-kohl.vercel.app/api/likes", {
     data: { postId, userId },
   })
   return response.data
 }
 
 export async function hasUserLikedPost(postId: string, userId: string) {
-  const response = await axios.get(`http://localhost:3000/api/likes?postId=${postId}&userId=${userId}`)
+  const response = await axios.get(`https://fitness-evolution-kohl.vercel.app/api/likes?postId=${postId}&userId=${userId}`)
   return response.data.hasLiked
 }
