@@ -42,7 +42,7 @@ export default function ChatScreen() {
   const getUserId = async () => {
     try {
       const token = await AsyncStorage.getItem("userToken")
-      const response = await axios.get("http://localhost:3000/api/mobile/user", {
+      const response = await axios.get("https://fitness-evolution-kohl.vercel.app/api/mobile/user", {
         headers: { Authorization: `Bearer ${token}` },
       })
       setUserId(response.data.user.id)
@@ -55,7 +55,7 @@ export default function ChatScreen() {
     try {
       const token = await AsyncStorage.getItem("userToken")
       const response = await axios.post(
-        "http://localhost:3000/api/mobile/chat/create",
+        "https://fitness-evolution-kohl.vercel.app/api/mobile/chat/create",
         { trainerId },
         { headers: { Authorization: `Bearer ${token}` } },
       )
@@ -71,7 +71,7 @@ export default function ChatScreen() {
   const fetchMessages = async (id?: string) => {
     try {
       const token = await AsyncStorage.getItem("userToken")
-      const response = await axios.get(`http://localhost:3000/api/mobile/chat/${id || chatId}/messages`, {
+      const response = await axios.get(`https://fitness-evolution-kohl.vercel.app/api/mobile/chat/${id || chatId}/messages`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       setMessages(response.data.messages)
@@ -86,7 +86,7 @@ export default function ChatScreen() {
     try {
       const token = await AsyncStorage.getItem("userToken")
       await axios.post(
-        `http://localhost:3000/api/mobile/chat/${chatId}/messages`,
+        `https://fitness-evolution-kohl.vercel.app/api/mobile/chat/${chatId}/messages`,
         { content: input },
         { headers: { Authorization: `Bearer ${token}` } },
       )

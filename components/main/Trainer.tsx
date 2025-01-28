@@ -23,7 +23,7 @@ export default function Trainer() {
       try {
         setLoading(true)
         setError(null)
-        const response = await axios.get<{ users: Trainer[] }>("http://localhost:3000/api/mobile/users/trainer", {
+        const response = await axios.get<{ users: Trainer[] }>("https://fitness-evolution-kohl.vercel.app/api/mobile/users/trainer", {
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",

@@ -31,7 +31,7 @@ export default function ExploreScreen() {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/posts")
+      const response = await axios.get("https://fitness-evolution-kohl.vercel.app/api/posts")
       const data = response.data
       // Sort posts by publishedAt date in descending order
       const sortedPosts = data.sort(

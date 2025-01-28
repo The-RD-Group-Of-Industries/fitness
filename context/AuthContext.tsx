@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post("http://localhost:3000/api/mobile/auth/login", {
+      const response = await axios.post("https://fitness-evolution-kohl.vercel.app/api/mobile/auth/login", {
         email,
         password,
       })
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (name: string, email: string, password: string) => {
     try {
-      const response = await axios.post("http://localhost:3000/api/mobile/auth/register", {
+      const response = await axios.post("https://fitness-evolution-kohl.vercel.app/api/mobile/auth/register", {
         name,
         email,
         password,
