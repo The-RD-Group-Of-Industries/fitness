@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const token = await AsyncStorage.getItem("userToken")
       if (token) {
-        const response = await axios.get("http://localhost:3000/api/mobile/user", {
+        const response = await axios.get("https://fitness-evolution-kohl.vercel.app/api/mobile/user", {
           headers: { Authorization: `Bearer ${token}` },
         })
         setUser(response.data.user)

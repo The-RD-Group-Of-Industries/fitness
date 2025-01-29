@@ -11,6 +11,7 @@ interface Schedule {
   startTime: string
   scheduleLink: string
   scheduleSubject: string
+  status: string
   trainer: {
     name: string
   }
@@ -56,16 +57,19 @@ export default function Upcoming() {
             <Text style={css.text}>{format(new Date(schedule.startTime), "MMM d, h:mm a")}</Text>
             <Text style={css.title}>{schedule.scheduleSubject}</Text>
             <Text style={css.trainerName}>With {schedule.trainer.name}</Text>
-            <LinearGradient
-              colors={["#08027a", "#382eff"]}
-              start={{ x: 1, y: 0.9 }}
-              end={{ x: 0.3, y: 0.8 }}
-              style={css.button}
-            >
-              <TouchableOpacity onPress={() => window.open(schedule.scheduleLink, '_blank')}>
-                <Text style={css.btnText}>Join Now</Text>
-              </TouchableOpacity>
-            </LinearGradient>
+            <Text style={css.status}>{schedule.status}</Text>
+            {schedule.status === "upcoming" && (
+              <LinearGradient
+                colors={["#08027a", "#382eff"]}
+                start={{ x: 1, y: 0.9 }}
+                end={{ x: 0.3, y: 0.8 }}
+                style={css.button}
+              >
+                <TouchableOpacity onPress={() => window.open(schedule.scheduleLink, "_blank")}>
+                  <Text style={css.btnText}>Join Now</Text>
+                </TouchableOpacity>
+              </LinearGradient>
+            )}
           </View>
         ))
       ) : (
@@ -115,6 +119,12 @@ const css = StyleSheet.create({
     marginTop: 4,
     fontSize: 16,
     fontWeight: "600",
+  },
+  status: {
+    color: "white",
+    marginTop: 4,
+    fontSize: 14,
+    fontWeight: "500",
   },
   button: {
     position: "absolute",
