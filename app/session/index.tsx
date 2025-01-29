@@ -7,6 +7,7 @@ import { LinearGradient } from "expo-linear-gradient"
 import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker"
 import axios from "axios"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { useRouter } from "expo-router"
 
 interface Trainer {
   id: string
@@ -45,6 +46,7 @@ export default function Session() {
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showStartTimePicker, setShowStartTimePicker] = useState(false)
   const [showEndTimePicker, setShowEndTimePicker] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     fetchTrainers()
@@ -89,7 +91,12 @@ export default function Session() {
           },
         },
       )
-      Alert.alert("Success", "Session scheduled successfully!")
+      Alert.alert("Success", "Session scheduled successfully!", [
+        {
+          text: "OK",
+          onPress: () => router.push("/(tabs)"),
+        },
+      ])
     } catch (error) {
       console.error("Error scheduling session:", error)
       Alert.alert("Error", "Failed to schedule session")
