@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native"
+import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView } from "react-native"
 import { useThemeColor } from "@/hooks/useThemeColor"
 import { LinearGradient } from "expo-linear-gradient"
 import { Feather, Ionicons } from "@expo/vector-icons"
@@ -37,7 +37,7 @@ export default function TabTwoScreen() {
   const options = [
     {
       title: "Settings",
-      Icon: Feather,
+      Icon: Feather as any,
       iconName: "settings",
       iconColor: "deepskyblue",
     },
@@ -61,6 +61,7 @@ export default function TabTwoScreen() {
     },
   ]
   return (
+  <SafeAreaView style={{flex: 1}}>
     <View style={styles.container}>
       <View style={styles.child}>
         <Text style={[styles.heading, { color }]}>My Account</Text>
@@ -97,6 +98,7 @@ export default function TabTwoScreen() {
         ))}
       </View>
     </View>
+  </SafeAreaView>
   )
 }
 
@@ -118,15 +120,16 @@ const styles = StyleSheet.create({
     marginBottom: "2%",
   },
   cardPrimary: {
-    width: "80%",
+    width: "85%",
     height: 160,
     backgroundColor: primary,
     borderRadius: 14,
     padding: 12,
+    // paddingHorizontal: 10,
     justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "row",
-    gap: "4%",
+    gap: "1%",
   },
   modCircle: {
     width: 100,
