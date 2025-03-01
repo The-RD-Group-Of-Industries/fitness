@@ -23,6 +23,30 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+    "webConfig": {
+      "favicon": "./assets/images/favicon.png",
+      "manifest": {
+        "short_name": "Fitness Evolution",
+        "name": "Fitness Evolution",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#ffffff",
+        "theme_color": "#000000",
+        "description": "Your fitness companion PWA",
+        "icons": [
+          {
+            "src": "./assets/images/icon.png",
+            "sizes": "192x192",
+            "type": "image/png"
+          },
+          {
+            "src": "./assets/images/adaptive-icon.png",
+            "sizes": "512x512",
+            "type": "image/png"
+          }
+        ]
+      }
+    },
     "plugins": [
       "expo-router",
       [

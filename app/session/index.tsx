@@ -143,6 +143,10 @@ export default function Session() {
       <Stack.Screen
         options={{
           headerTitle: "Book a session",
+          headerStyle: {
+            backgroundColor: "#090E26",
+          },
+          headerTintColor: "#fff",
         }}
       />
       <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={styles.contentContainer}>

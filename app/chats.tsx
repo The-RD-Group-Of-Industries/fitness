@@ -70,7 +70,13 @@ export default function ChatsScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: "Chats" }} />
+      <Stack.Screen options={{ title: "Chats", 
+      
+      headerStyle: {
+        backgroundColor: "#090E26",
+      }, headerTintColor: "#fff", headerTitleStyle: {
+        fontWeight: "600",
+      } }} />
       <View style={styles.container}>
         <TextInput
           style={styles.searchBar}

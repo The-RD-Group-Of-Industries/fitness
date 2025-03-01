@@ -5,6 +5,7 @@ import * as SplashScreen from "expo-splash-screen"
 import { StatusBar } from "expo-status-bar"
 import { useEffect } from "react"
 import "react-native-reanimated"
+import { Platform } from "react-native";
 
 import { useColorScheme } from "@/hooks/useColorScheme"
 import { AuthProvider } from "@/context/AuthContext"
@@ -22,6 +23,15 @@ export default function RootLayout() {
       SplashScreen.hideAsync()
     }
   }, [loaded])
+
+  useEffect(() => {
+    if (Platform.OS === "web" && "serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/service-worker.js")
+        .then(() => console.log("Service Worker Registered"))
+        .catch((err) => console.log("Service Worker Registration Failed:", err));
+    }
+  }, []);
 
   if (!loaded) {
     return null

@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native"
 import { useState } from "react"
-import { useRouter } from "expo-router"
+import { Stack, useRouter } from "expo-router"
 import { FontAwesome6 } from "@expo/vector-icons"
 import { useAuth } from "@/context/AuthContext"
 
@@ -17,15 +17,20 @@ export default function LoginScreen() {
       setLoading(true)
       await login(email, password)
     } catch (error) {
-      console.error("Login error:", error)
-      // Handle error appropriately
+      alert("Something went wrong, Please check your credentials")
     } finally {
       setLoading(false)
     }
   }
 
   return (
+
     <View style={styles.container}>
+    <Stack.Screen 
+      options={{
+        headerShown: false,
+      }}
+      />
       <View style={styles.content}>
         <View style={styles.iconContainer}>
           <FontAwesome6 name="dumbbell" size={40} color="#fff" />
