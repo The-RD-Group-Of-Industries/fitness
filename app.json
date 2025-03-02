@@ -2,8 +2,7 @@
   "expo": {
     "name": "Fitness Evolution",
     "slug": "fitness",
-    "version": "1.0.0",
-    "orientation": "portrait",
+    "version": "1.0.1",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
