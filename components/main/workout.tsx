@@ -1,10 +1,10 @@
-import { useThemeColor } from "@/hooks/useThemeColor";
+import { ThemedView } from "@/components/ThemedView";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function TabTwoScreen() {
-  const color = useThemeColor({ light: "black", dark: "white" }, "text");
+export default function Workouts() {
+  const color = "white";
 
   const options = [
     {
@@ -49,7 +49,9 @@ export default function TabTwoScreen() {
     },
   ];
   return (
+<ThemedView>
     <View style={styles.container}>
+  {/* <View style={styles.blur_layer} /> */}
     <ScrollView showsVerticalScrollIndicator={false}>
 
       <View style={styles.child}>
@@ -84,16 +86,26 @@ export default function TabTwoScreen() {
       </View>
 </ScrollView>
     </View>
+</ThemedView>
   );
 }
-
-const primary = "#090E21";
 
 const styles = StyleSheet.create({
   container: {
     justifyContent: "flex-start",
     alignItems: "flex-start",
     height: "100%",
+    position: 'relative',
+  },
+  blur_layer: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    backgroundColor: '#00000080',
+    borderRadius: 10,
+    overflow: "hidden",
+    zIndex: 50,
   },
   child: {
     marginTop: 60,

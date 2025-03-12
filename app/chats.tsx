@@ -16,19 +16,18 @@ interface Trainer {
 
 export default function ChatsScreen() {
   const [trainers, setTrainers] = useState<Trainer[]>([])
+  const [AssignedTrnr, setAssignedTrnr] = useState<any>({})
   const [searchQuery, setSearchQuery] = useState("")
   const [loading, setLoading] = useState(true)
-  const color = useThemeColor({ light: "black", dark: "white" }, "text")
+  const color = "white"
   const router = useRouter()
 
-  useEffect(() => {
-    fetchTrainers()
-  }, [])
 
-  const fetchTrainers = async () => {
+
+  const fetchAdmins = async () => {
     try {
       const token = await AsyncStorage.getItem("userToken")
-      const response = await axios.get("https://fitness-evolution-kohl.vercel.app/api/mobile/users/trainer", {
+      const response = await axios.get("https://fitness-admin-tau.vercel.app/api/mobile/users/admin", {
         headers: { Authorization: `Bearer ${token}` },
       })
       setTrainers(response.data.users)
@@ -39,24 +38,47 @@ export default function ChatsScreen() {
     }
   }
 
+  const fetchTrainers = async (): Promise<void> => {
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      const response = await axios.get(
+        "https://fitness-admin-tau.vercel.app/api/mobile/users/usrTrainr", 
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setAssignedTrnr(response.data.user.trainer)
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+
+
   const filteredTrainers = trainers.filter(
     (trainer) =>
       trainer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       trainer.email.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
-  const handleTrainerPress = (trainerId: string) => {
+
+  useEffect(() => {
+    fetchAdmins()
+    fetchTrainers()
+  }, [])
+
+  const handleTrainerPress = (trainerId: string, name: string) => {
     router.push({
       pathname: "/chat/[trainerId]",
-      params: { trainerId },
+      params: { trainerId, name },
     })
   }
 
   const renderTrainerItem = ({ item }: { item: Trainer }) => (
-    <TouchableOpacity style={styles.trainerItem} onPress={() => handleTrainerPress(item.id)}>
-      <Text style={[styles.trainerName, { color }]}>{item.name || "Unnamed Trainer"}</Text>
+    <TouchableOpacity style={styles.trainerItem} onPress={() => handleTrainerPress(item.id, item.name ? item.name : "Admin")}>
+      <Text style={[styles.trainerName, { color }]}>{item.name || "Admin"}</Text>
       <Text style={styles.trainerEmail}>{item.email}</Text>
-      {item.specialization && <Text style={styles.trainerSpecialization}>{item.specialization}</Text>}
+      {/* {item.specialization && <Text style={styles.trainerSpecialization}>{item.specialization}</Text>} */}
     </TouchableOpacity>
   )
 
@@ -80,11 +102,36 @@ export default function ChatsScreen() {
       <View style={styles.container}>
         <TextInput
           style={styles.searchBar}
-          placeholder="Search trainers..."
+          placeholder="Search Admins..."
           value={searchQuery}
           onChangeText={setSearchQuery}
           placeholderTextColor="#6B7280"
         />
+        {
+          AssignedTrnr && 
+          <>
+          <Text style={{
+            fontSize: 24,
+            color: 'white',
+            paddingHorizontal: 6,
+            paddingVertical: 10,
+            fontWeight: 800
+          }}>Trainer</Text>
+          <FlatList
+          data={AssignedTrnr}
+          renderItem={renderTrainerItem}
+          keyExtractor={(item) => item.id}
+          style={styles.trainerList}
+          />
+          </>
+        }
+        <Text style={{
+          fontSize: 24,
+          color: 'white',
+          paddingHorizontal: 6,
+          paddingVertical: 10,
+          fontWeight: 800
+        }}>Admins</Text>
         <FlatList
           data={filteredTrainers}
           renderItem={renderTrainerItem}
@@ -124,6 +171,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+    color: "white"
   },
   trainerName: {
     fontSize: 18,

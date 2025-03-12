@@ -8,6 +8,7 @@ import DateTimePicker, { type DateTimePickerEvent } from "@react-native-communit
 import axios from "axios"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useRouter } from "expo-router"
+import { ThemedView } from "@/components/ThemedView"
 
 interface Trainer {
   id: string
@@ -54,7 +55,7 @@ export default function Session() {
 
   const fetchTrainers = async () => {
     try {
-      const response = await axios.get<{ users: Trainer[] }>("https://fitness-evolution-kohl.vercel.app/api/mobile/users/trainer")
+      const response = await axios.get<{ users: Trainer[] }>("https://fitness-admin-tau.vercel.app/api/mobile/users/trainer")
       const formattedTrainers: DropdownItem[] = response.data.users.map((trainer: Trainer) => ({
         label: trainer.name || trainer.email,
         value: trainer.id,
@@ -76,7 +77,7 @@ export default function Session() {
       setLoading(true)
       const token = await AsyncStorage.getItem("userToken")
       await axios.post(
-        "https://fitness-evolution-kohl.vercel.app/api/mobile/schedule/create",
+        "https://fitness-admin-tau.vercel.app/api/mobile/schedule/create",
         {
           date: date.toISOString(),
           startTime: startTime.toISOString(),
@@ -149,6 +150,8 @@ export default function Session() {
           headerTintColor: "#fff",
         }}
       />
+      <ThemedView>
+
       <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={styles.contentContainer}>
         <View style={styles.container}>
           <View style={styles.child}>
@@ -218,7 +221,7 @@ export default function Session() {
               ))}
             </DisplayBox>
 
-            <CustomDropdown data={trainers} onSelect={(value: string) => setSelectedTrainer(value)} />
+            {/* <CustomDropdown data={trainers} onSelect={(value: string) => setSelectedTrainer(value)} /> */}
 
             <LinearGradient
               colors={["#08027a", "#382eff"]}
@@ -233,6 +236,7 @@ export default function Session() {
           </View>
         </View>
       </ScrollView>
+  </ThemedView>
     </>
   )
 }
@@ -291,7 +295,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   selectedBox: {
-    backgroundColor: "#3082fc20",
+    backgroundColor: "#3082fc30",
     borderColor: "#3082fc",
     borderWidth: 2,
   },

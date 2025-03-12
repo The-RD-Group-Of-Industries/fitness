@@ -68,7 +68,7 @@ export default function RootLayout() {
 
   return showInstallPage ? <InstallInstructions /> : (
     <AuthProvider>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={DarkTheme}>
         <Stack>
           <Stack.Screen name="welcome" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

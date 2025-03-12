@@ -1,5 +1,6 @@
 import Trainer from '@/components/main/Trainer';
 import Upcoming from '@/components/main/Upcoming';
+import { ThemedView } from '@/components/ThemedView';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -44,6 +45,7 @@ export default function HomeScreen() {
       // },
     ]
   return (
+  <ThemedView style={styles.top}>
   <ScrollView 
   contentContainerStyle={styles.contentContainer}
   showsVerticalScrollIndicator={false}
@@ -77,12 +79,18 @@ export default function HomeScreen() {
 
 
   </ScrollView>
+</ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
+  top: {
+    flex: 1,
+    backgroundColor: "#090E21"
+  },
   contentContainer: {
-    paddingBottom: 50
+    paddingBottom: 50,
+    // backgroundColor: 'red'
   },
   col: {
     flex: 1

@@ -16,14 +16,14 @@ export default function Trainer() {
   const [trainers, setTrainers] = useState<Trainer[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const color = useThemeColor({ light: "black", dark: "white" }, "text")
+  const color = "white"
 
   useEffect(() => {
     const fetchTrainers = async () => {
       try {
         setLoading(true)
         setError(null)
-        const response = await axios.get<{ users: Trainer[] }>("https://fitness-evolution-kohl.vercel.app/api/mobile/users/trainer", {
+        const response = await axios.get<{ users: Trainer[] }>("https://fitness-admin-tau.vercel.app/api/mobile/users/trainer", {
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",

@@ -69,8 +69,9 @@ export default function TabLayout() {
           headerTitleStyle: {
             fontWeight: "800",
             fontSize: 26,
+            color: 'white'
           },
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={22} name="house.fill" color={'#ffffff'} />,
         }}
       />
       <Tabs.Screen
@@ -80,13 +81,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <AntDesign name="search1" size={22} color={color} />,
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="workout"
         options={{
           title: "Workouts",
           tabBarIcon: ({ color }) => <FontAwesome6 name="dumbbell" size={22} color={color} />,
         }}
-      />
+      /> */}
       <Tabs.Screen
         name="profile"
         options={{

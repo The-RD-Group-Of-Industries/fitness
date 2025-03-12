@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const token = await AsyncStorage.getItem("userToken")
       if (token) {
-        const response = await axios.get("https://fitness-evolution-kohl.vercel.app/api/mobile/user", {
+        const response = await axios.get("https://fitness-admin-tau.vercel.app/api/mobile/user", {
           headers: { Authorization: `Bearer ${token}` },
         })
         setUser(response.data.user)
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post("https://fitness-evolution-kohl.vercel.app/api/mobile/auth/login", {
+      const response = await axios.post("https://fitness-admin-tau.vercel.app/api/mobile/auth/login", {
         email,
         password,
       })
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (name: string, email: string, password: string) => {
     try {
-      const response = await axios.post("https://fitness-evolution-kohl.vercel.app/api/mobile/auth/register", {
+      const response = await axios.post("https://fitness-admin-tau.vercel.app/api/mobile/auth/register", {
         name,
         email,
         password,

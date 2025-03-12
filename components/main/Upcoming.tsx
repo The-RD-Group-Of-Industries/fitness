@@ -28,7 +28,7 @@ export default function Upcoming() {
   const fetchUpcomingSchedules = async () => {
     try {
       const token = await AsyncStorage.getItem("userToken")
-      const response = await axios.get("https://fitness-evolution-kohl.vercel.app/api/mobile/schedule/upcoming", {
+      const response = await axios.get("https://fitness-admin-tau.vercel.app/api/mobile/schedule/upcoming", {
         headers: { Authorization: `Bearer ${token}` },
       })
       setSchedules(response.data.schedules)

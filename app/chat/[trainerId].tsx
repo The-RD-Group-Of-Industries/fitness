@@ -1,116 +1,130 @@
-import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, ActivityIndicator } from "react-native"
-import { useEffect, useState, useRef } from "react"
-import { Stack, useLocalSearchParams } from "expo-router"
-import axios from "axios"
-import AsyncStorage from "@react-native-async-storage/async-storage"
-import { Ionicons } from "@expo/vector-icons"
-import { LinearGradient } from "expo-linear-gradient"
+import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
+import { useEffect, useState, useRef, useLayoutEffect } from "react";
+import { Stack, useLocalSearchParams } from "expo-router";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation } from "@react-navigation/native";
 
 interface Message {
-  id: string
-  content: string
-  createdAt: string
-  senderId: string
+  id: string;
+  content: string;
+  createdAt: string;
+  senderId: string;
   sender: {
-    id: string
-    name: string
-    image: string
-  }
+    id: string;
+    name: string;
+    image: string;
+  };
 }
 
 export default function ChatScreen() {
-  const { trainerId } = useLocalSearchParams<{ trainerId: string }>()
-  const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState("")
-  const [loading, setLoading] = useState(true)
-  const [chatId, setChatId] = useState<string | null>(null)
-  const [userId, setUserId] = useState<string | null>(null)
-  const flatListRef = useRef<FlatList>(null)
-
-  useEffect(() => {
-    initializeChat()
-    getUserId()
-  }, [trainerId])
+  const navigation = useNavigation();
+  const { trainerId, name } = useLocalSearchParams<{ trainerId: string, name: string }>();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [chatId, setChatId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  // const [userName, setUserName] = useState<string | null>("");
+  const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
     if (chatId) {
-      const interval = setInterval(fetchMessages, 1000)
-      return () => clearInterval(interval)
+      const interval = setInterval(fetchMessages, 1000);
+      return () => clearInterval(interval);
     }
-  }, [chatId])
+  }, [chatId]);
 
   const getUserId = async () => {
     try {
-      const token = await AsyncStorage.getItem("userToken")
-      const response = await axios.get("https://fitness-evolution-kohl.vercel.app/api/mobile/user", {
+      const token = await AsyncStorage.getItem("userToken");
+      const response = await axios.get("https://fitness-admin-tau.vercel.app/api/mobile/user", {
         headers: { Authorization: `Bearer ${token}` },
-      })
-      setUserId(response.data.user.id)
+      });
+      // setUserName(response.data.user.name);
+      setUserId(response.data.user.id);
     } catch (error) {
-      console.error("Error getting user ID:", error)
+      console.error("Error getting user ID:", error);
     }
-  }
+  };
 
   const initializeChat = async () => {
     try {
-      const token = await AsyncStorage.getItem("userToken")
+      const token = await AsyncStorage.getItem("userToken");
       const response = await axios.post(
-        "https://fitness-evolution-kohl.vercel.app/api/mobile/chat/create",
+        "https://fitness-admin-tau.vercel.app/api/mobile/chat/create",
         { trainerId },
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
-      setChatId(response.data.chat.id)
-      await fetchMessages(response.data.chat.id)
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setChatId(response.data.chat.id);
+
+      await fetchMessages(response.data.chat.id);
     } catch (error) {
-      console.error("Error initializing chat:", error)
+      console.error("Error initializing chat:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
+  
+  useEffect(() => {
+    initializeChat();
+    getUserId();
+  }, [trainerId]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: `${name}`, 
+    });
+  }, [name, navigation]);
 
   const fetchMessages = async (id?: string) => {
     try {
-      const token = await AsyncStorage.getItem("userToken")
-      const response = await axios.get(`https://fitness-evolution-kohl.vercel.app/api/mobile/chat/${id || chatId}/messages`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      setMessages(response.data.messages)
+      const token = await AsyncStorage.getItem("userToken");
+      const response = await axios.get(
+        `https://fitness-admin-tau.vercel.app/api/mobile/chat/${id || chatId}/messages`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setMessages(response.data.messages);
     } catch (error) {
-      console.error("Error fetching messages:", error)
+      console.error("Error fetching messages:", error);
     }
-  }
+  };
 
   const sendMessage = async () => {
-    if (!input.trim() || !chatId) return
+    if (!input.trim() || !chatId) return;
 
     try {
-      const token = await AsyncStorage.getItem("userToken")
+      const token = await AsyncStorage.getItem("userToken");
       await axios.post(
-        `https://fitness-evolution-kohl.vercel.app/api/mobile/chat/${chatId}/messages`,
+        `https://fitness-admin-tau.vercel.app/api/mobile/chat/${chatId}/messages`,
         { content: input },
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
-      setInput("")
-      await fetchMessages()
-      flatListRef.current?.scrollToEnd()
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setInput("");
+      await fetchMessages();
+      flatListRef.current?.scrollToEnd();
     } catch (error) {
-      console.error("Error sending message:", error)
+      console.error("Error sending message:", error);
     }
-  }
+  };
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#00B4D8" />
       </View>
-    )
+    );
   }
 
   return (
     <>
       <Stack.Screen
         options={{
-          headerTitle: "Chat with Trainer",
           headerStyle: {
             backgroundColor: "#090E21",
           },
@@ -124,7 +138,10 @@ export default function ChatScreen() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View
-              style={[styles.messageContainer, item.sender.id === userId ? styles.userMessage : styles.trainerMessage]}
+              style={[
+                styles.messageContainer,
+                item.sender.id === userId ? styles.userMessage : styles.trainerMessage,
+              ]}
             >
               <Text style={styles.messageText}>{item.content}</Text>
             </View>
@@ -152,7 +169,7 @@ export default function ChatScreen() {
         </View>
       </View>
     </>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -213,4 +230,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-})
+});
