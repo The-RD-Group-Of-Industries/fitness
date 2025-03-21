@@ -3,10 +3,10 @@ import { useState } from "react"
 import { Stack, useRouter } from "expo-router"
 import { FontAwesome6 } from "@expo/vector-icons"
 import { useAuth } from "@/context/AuthContext"
+import axios from "axios"
 
 export default function RegisterScreen() {
   const router = useRouter()
-  const { register } = useAuth()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -15,8 +15,24 @@ export default function RegisterScreen() {
   const handleRegister = async () => {
     try {
       setLoading(true)
-      await register(name, email, password)
-    } catch (error) {
+
+  const verify = await axios.post("https://fitness-admin-tau.vercel.app/api/mobile/auth/verify", {
+    email: email
+  })
+
+      if (verify.status === 200) {
+        if (verify.data.user) {
+          return alert("Email already exists.")
+        }
+        else {
+          router.push({
+            pathname: "/auth/otp",
+            params: { registerd: "true", name: name, password: password, email: email }
+          })
+        }
+      }
+} 
+    catch (error) {
       console.error("Registration error:", error)
       // Handle error appropriately
     } finally {

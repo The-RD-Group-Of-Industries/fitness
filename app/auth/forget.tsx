@@ -1,24 +1,35 @@
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native"
 import { useState } from "react"
 import { Stack, useRouter } from "expo-router"
-import { FontAwesome6 } from "@expo/vector-icons"
-import { useAuth } from "@/context/AuthContext"
+import axios from "axios"
 
 export default function LoginScreen() {
   const router = useRouter()
-  const { login } = useAuth()
   const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [rememberMe, setRememberMe] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const handleLogin = async () => {
+  const handleSendOtp = async () => {
+    if (!email) {
+      return alert("You've not provided any email, Please let us know about it first!")
+    }
     try {
       setLoading(true)
-      await login(email, password)
-    } catch (error) {
-      alert("Something went wrong, Please check your credentials")
-    } finally {
+      const check = await axios.post("https://fitness-admin-tau.vercel.app/api/mobile/auth/verify", {
+        email: email
+      })
+      if (check.status === 200) {
+        if (check.data.user) {
+          router.push({
+            pathname: "/auth/otp",
+            params: { email: email }
+          })
+        }
+      }
+      }
+      catch (e) {
+      alert("Email Doesn't Exist") 
+    }
+    finally {
       setLoading(false)
     }
   }
@@ -32,18 +43,14 @@ export default function LoginScreen() {
       }}
       />
       <View style={styles.content}>
-        <View style={styles.iconContainer}>
-          <FontAwesome6 name="dumbbell" size={40} color="#fff" />
-        </View>
-
-        <Text style={styles.title}>Welcome to Fitness Evolution</Text>
+        <Text style={styles.title}>Recover Your Account</Text>
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter your email"
+              placeholder="Let us know your email"
               placeholderTextColor="#6B7280"
               value={email}
               onChangeText={setEmail}
@@ -52,45 +59,20 @@ export default function LoginScreen() {
             />
           </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your password"
-              placeholderTextColor="#6B7280"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-          </View>
-
-          <View style={styles.optionsContainer}>
-            <TouchableOpacity style={styles.checkboxContainer} onPress={() => setRememberMe(!rememberMe)}>
-              <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                {rememberMe && <FontAwesome6 name="check" size={12} color="#fff" />}
-              </View>
-              <Text style={styles.checkboxLabel}>Remember me</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => router.push("/auth/forget")}>
-              <Text style={styles.forgotPassword}>Forgot password?</Text>
-            </TouchableOpacity>
-          </View>
-
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleLogin}
+            onPress={handleSendOtp}
             disabled={loading}
           >
-            <Text style={styles.buttonText}>{loading ? "Logging in..." : "Login"}</Text>
+            <Text style={styles.buttonText}>{loading ? "Sending" : "Send OTP"}</Text>
           </TouchableOpacity>
 
-          <View style={styles.signupContainer}>
+          {/* <View style={styles.signupContainer}>
             <Text style={styles.signupText}>New to Fitness Evolution?</Text>
             <TouchableOpacity onPress={() => router.push("/auth/register")}>
               <Text style={styles.signupLink}>Create an account</Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
         </View>
       </View>
     </View>

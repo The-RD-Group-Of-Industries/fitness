@@ -1,28 +1,59 @@
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native"
-import { useState } from "react"
-import { Stack, useRouter } from "expo-router"
-import { FontAwesome6 } from "@expo/vector-icons"
+import { useEffect, useState } from "react"
+import { Stack, useRouter, useLocalSearchParams } from "expo-router"
+import axios from "axios"
 import { useAuth } from "@/context/AuthContext"
 
-export default function LoginScreen() {
+
+export default function OTPSCREEN() {
   const router = useRouter()
-  const { login } = useAuth()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [rememberMe, setRememberMe] = useState(false)
+  const { register } = useAuth()
+  const {email, registerd, password, name} = useLocalSearchParams<{email: string, registerd: string, name: string, password: string}>()
+  const [Value, setNumber] = useState(0)
+  const [generated, setGenerated] = useState(0)
   const [loading, setLoading] = useState(false)
 
-  const handleLogin = async () => {
-    try {
-      setLoading(true)
-      await login(email, password)
-    } catch (error) {
-      alert("Something went wrong, Please check your credentials")
-    } finally {
-      setLoading(false)
+  async function GenOtp() {
+    let minm = 10000;
+    let maxm = 99999;
+    let number =  Math.floor(Math.random() * (maxm - minm + 1)) + minm;
+    const sendMail = await axios.post("https://fitness-admin-tau.vercel.app/api/mobile/auth/sendotp", { 
+      email: email,
+      otp: number,
+    })
+    console.log(number)
+    if (sendMail.status === 200) {
+      return number
+    }
+    
+  }
+
+  async function VerifyOTP() {
+    const inp = Number(Value)
+    const real = generated
+    
+    if (inp === real) {
+      if (registerd === "true") {
+            return await register(name, email, password);
+      }
+      else {
+        router.push({
+          pathname: "/auth/recover",
+          params: { email: email }
+        })
+      }
+    }
+    else {
+      console.log(inp, real)
+      alert("Invalid OTP, Please check again.")
     }
   }
 
+
+  useEffect(() => {
+    const gen = GenOtp()
+    setGenerated(gen)
+  }, [])
   return (
 
     <View style={styles.container}>
@@ -32,65 +63,30 @@ export default function LoginScreen() {
       }}
       />
       <View style={styles.content}>
-        <View style={styles.iconContainer}>
-          <FontAwesome6 name="dumbbell" size={40} color="#fff" />
-        </View>
-
-        <Text style={styles.title}>Welcome to Fitness Evolution</Text>
-
+        <Text style={styles.title}>Recover Your Account</Text>
+      <Text style={[styles.label, {color: '#382eff', marginBottom: 32, textAlign: "center"}]}>OTP has been sent successfully to {email}</Text>
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email</Text>
+            {/* <Text style={styles.label}>OTP</Text> */}
             <TextInput
               style={styles.input}
-              placeholder="Enter your email"
+              placeholder="Enter the OTP"
               placeholderTextColor="#6B7280"
-              value={email}
-              onChangeText={setEmail}
+              value={Value}
+              onChangeText={setNumber}
               autoCapitalize="none"
-              keyboardType="email-address"
+              maxLength={5}
+              keyboardType="number-pad"
             />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your password"
-              placeholderTextColor="#6B7280"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-          </View>
-
-          <View style={styles.optionsContainer}>
-            <TouchableOpacity style={styles.checkboxContainer} onPress={() => setRememberMe(!rememberMe)}>
-              <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                {rememberMe && <FontAwesome6 name="check" size={12} color="#fff" />}
-              </View>
-              <Text style={styles.checkboxLabel}>Remember me</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => router.push("/auth/forget")}>
-              <Text style={styles.forgotPassword}>Forgot password?</Text>
-            </TouchableOpacity>
           </View>
 
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleLogin}
+            onPress={VerifyOTP}
             disabled={loading}
           >
-            <Text style={styles.buttonText}>{loading ? "Logging in..." : "Login"}</Text>
+            <Text style={styles.buttonText}>{loading ? "Verifing..." : "Verify"}</Text>
           </TouchableOpacity>
-
-          <View style={styles.signupContainer}>
-            <Text style={styles.signupText}>New to Fitness Evolution?</Text>
-            <TouchableOpacity onPress={() => router.push("/auth/register")}>
-              <Text style={styles.signupLink}>Create an account</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </View>
     </View>
@@ -121,7 +117,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "700",
     color: "#fff",
-    marginBottom: 32,
+    marginBottom: 4,
     textAlign: "center",
   },
   form: {
