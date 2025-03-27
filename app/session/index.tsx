@@ -49,27 +49,27 @@ export default function Session() {
   const [showEndTimePicker, setShowEndTimePicker] = useState(false)
   const router = useRouter()
 
-  useEffect(() => {
-    fetchTrainers()
-  }, [])
+  // useEffect(() => {
+  //   fetchTrainers()
+  // }, [])
 
-  const fetchTrainers = async () => {
-    try {
-      const response = await axios.get<{ users: Trainer[] }>("https://fitness-admin-tau.vercel.app/api/mobile/users/trainer")
-      const formattedTrainers: DropdownItem[] = response.data.users.map((trainer: Trainer) => ({
-        label: trainer.name || trainer.email,
-        value: trainer.id,
-      }))
-      setTrainers(formattedTrainers)
-    } catch (error) {
-      console.error("Error fetching trainers:", error)
-      Alert.alert("Error", "Failed to fetch trainers")
-    }
-  }
+  // const fetchTrainers = async () => {
+  //   try {
+  //     const response = await axios.get<{ users: Trainer[] }>("https://fitness-admin-tau.vercel.app/api/mobile/users/trainer")
+  //     const formattedTrainers: DropdownItem[] = response.data.users.map((trainer: Trainer) => ({
+  //       label: trainer.name || trainer.email,
+  //       value: trainer.id,
+  //     }))
+  //     setTrainers(formattedTrainers)
+  //   } catch (error) {
+  //     console.error("Error fetching trainers:", error)
+  //     Alert.alert("Error", "Failed to fetch trainers")
+  //   }
+  // }
 
   const handleSubmit = async () => {
-    if (!selectedTrainer || !sessionType) {
-      Alert.alert("Error", "Please select a trainer and session type")
+    if (!sessionType) {
+      Alert.alert("Error", "Please select a session type")
       return
     }
 
@@ -83,8 +83,8 @@ export default function Session() {
           startTime: startTime.toISOString(),
           endTime: endTime.toISOString(),
           scheduleSubject: "Training Session",
-          trainerId: selectedTrainer,
           sessionType,
+          // trainerId: selectedTrainer,
         },
         {
           headers: {

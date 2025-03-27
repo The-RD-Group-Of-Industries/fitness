@@ -21,18 +21,16 @@ export default function OTPSCREEN() {
       email: email,
       otp: number,
     })
-    console.log(number)
     if (sendMail.status === 200) {
+      console.log(number)
       return number
     }
-    
   }
 
   async function VerifyOTP() {
     const inp = Number(Value)
-    const real = generated
     
-    if (inp === real) {
+    if (inp === generated) {
       if (registerd === "true") {
             return await register(name, email, password);
       }
@@ -44,16 +42,20 @@ export default function OTPSCREEN() {
       }
     }
     else {
-      console.log(inp, real)
+      console.log(inp, generated)
       alert("Invalid OTP, Please check again.")
     }
   }
 
 
   useEffect(() => {
-    const gen = GenOtp()
-    setGenerated(gen)
-  }, [])
+    const fetchOtp = async () => {
+      const gen = await GenOtp();
+      setGenerated(gen);
+    };
+  
+    fetchOtp();
+  }, []);
   return (
 
     <View style={styles.container}>

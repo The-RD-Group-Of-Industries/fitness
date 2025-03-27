@@ -16,7 +16,7 @@ import { useAuth } from "@/context/AuthContext"
 export default function TabLayout() {
   const colorScheme = useColorScheme()
   const navigation = useNavigation()
-  const { logout } = useAuth()
+
 
   const BackButton = () => (
     <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingHorizontal: 8 }}>
@@ -24,11 +24,7 @@ export default function TabLayout() {
     </TouchableOpacity>
   )
 
-  const LogoutButton = () => (
-    <TouchableOpacity onPress={logout} style={{ paddingHorizontal: 8 }}>
-      <Ionicons name="log-out" size={24} color={Colors[colorScheme ?? "light"].tint} />
-    </TouchableOpacity>
-  )
+
 
   return (
     <Tabs
@@ -40,7 +36,7 @@ export default function TabLayout() {
           backgroundColor: "#090E21",
         },
         headerLeft: () => <BackButton />,
-        headerRight: () => <LogoutButton />,
+        // headerRight: () => <LogoutButton />,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({

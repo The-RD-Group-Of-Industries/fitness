@@ -14,12 +14,14 @@ import {
 } from "react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { LinearGradient } from "expo-linear-gradient";
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { Feather, Ionicons, SimpleLineIcons } from "@expo/vector-icons";
 import Fontisto from "@expo/vector-icons/Fontisto";
 import Entypo from "@expo/vector-icons/Entypo";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ThemedView } from "@/components/ThemedView";
+import { useAuth } from "@/context/AuthContext";
+
 
 // Get the screen dimensions
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -72,6 +74,7 @@ interface OptionItem {
 }
 
 const TabTwoScreen: React.FC = () => {
+  const { logout } = useAuth()
   const color = "white";
   const [userData, setUserData] = useState<UserData | null>(null);
   const [dimensions, setDimensions] = useState({
@@ -184,6 +187,13 @@ const TabTwoScreen: React.FC = () => {
                     <Feather name="arrow-right-circle" size={normalize(24)} color="#f2f2f2" />
                   </TouchableOpacity>
                 ))}
+
+<TouchableOpacity style={styles.smallCard} activeOpacity={0.7} onPress={logout}>
+                    <View style={styles.content}>
+                    <SimpleLineIcons name="logout" size={22} color="#ff003c" />
+                      <Text style={[styles.text, { color }]}>Logout</Text>
+                    </View>
+                  </TouchableOpacity>
               </View>
             </View>
           </View>

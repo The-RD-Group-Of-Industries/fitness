@@ -3,6 +3,7 @@ import { useState } from "react"
 import { Stack, useRouter } from "expo-router"
 import { FontAwesome6 } from "@expo/vector-icons"
 import { useAuth } from "@/context/AuthContext"
+import Feather from '@expo/vector-icons/Feather';
 
 export default function LoginScreen() {
   const router = useRouter()
@@ -11,6 +12,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [view, setView] = useState(false)
 
   const handleLogin = async () => {
     try {
@@ -54,14 +56,20 @@ export default function LoginScreen() {
 
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
+            <View style={styles.inputContainer_sec}>
             <TextInput
-              style={styles.input}
+              style={[styles.input, styles.input_sec]}
               placeholder="Enter your password"
               placeholderTextColor="#6B7280"
               value={password}
               onChangeText={setPassword}
-              secureTextEntry
-            />
+              secureTextEntry={view ? false : true}
+              />
+        <TouchableOpacity style={styles.btn}>
+              {view ? <Feather name="eye-off" size={24} color="white" onPress={() => setView(!view)}/> :
+              <Feather name="eye" size={24} color="white" onPress={() => setView(!view)}/>}
+        </TouchableOpacity>
+              </View>
           </View>
 
           <View style={styles.optionsContainer}>
@@ -117,6 +125,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 24,
   },
+  btn: {
+    backgroundColor: "#1C2139",
+    borderRadius: 12,
+    padding: 16,
+  },
   title: {
     fontSize: 24,
     fontWeight: "700",
@@ -131,6 +144,11 @@ const styles = StyleSheet.create({
   inputContainer: {
     marginBottom: 20,
   },
+  inputContainer_sec: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   label: {
     color: "#fff",
     marginBottom: 8,
@@ -142,6 +160,9 @@ const styles = StyleSheet.create({
     padding: 16,
     color: "#fff",
     fontSize: 16,
+  },
+  input_sec: {
+    width: "80%"
   },
   optionsContainer: {
     flexDirection: "row",

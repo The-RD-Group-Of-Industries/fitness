@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native"
 import { useState } from "react"
 import { Stack, useRouter } from "expo-router"
-import { FontAwesome6 } from "@expo/vector-icons"
+import { Feather, FontAwesome6 } from "@expo/vector-icons"
 import { useAuth } from "@/context/AuthContext"
 import axios from "axios"
 
@@ -11,6 +11,8 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
+  const [view, setView] = useState(false)
+
 
   const handleRegister = async () => {
     try {
@@ -81,6 +83,23 @@ export default function RegisterScreen() {
 
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
+            <View style={styles.inputContainer_sec}>
+            <TextInput
+              style={[styles.input, styles.input_sec]}
+              placeholder="Enter your password"
+              placeholderTextColor="#6B7280"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={view ? false : true}
+              />
+        <TouchableOpacity style={styles.btn}>
+              {view ? <Feather name="eye-off" size={24} color="white" onPress={() => setView(!view)}/> :
+              <Feather name="eye" size={24} color="white" onPress={() => setView(!view)}/>}
+        </TouchableOpacity>
+              </View>
+          </View>
+          {/* <View style={styles.inputContainer}>
+            <Text style={styles.label}>Password</Text>
             <TextInput
               style={styles.input}
               placeholder="Create a password"
@@ -89,7 +108,7 @@ export default function RegisterScreen() {
               onChangeText={setPassword}
               secureTextEntry
             />
-          </View>
+          </View> */}
 
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
@@ -115,6 +134,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#090E21",
+  },
+  btn: {
+    backgroundColor: "#1C2139",
+    borderRadius: 12,
+    padding: 16,
+  },
+  input_sec: {
+    width: "80%"
+  },
+  inputContainer_sec: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   content: {
     flex: 1,

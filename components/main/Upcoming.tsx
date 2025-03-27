@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native"
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Linking } from "react-native"
 import React, { useEffect, useState } from "react"
 import { LinearGradient } from "expo-linear-gradient"
 import axios from "axios"
@@ -31,6 +31,7 @@ export default function Upcoming() {
       const response = await axios.get("https://fitness-admin-tau.vercel.app/api/mobile/schedule/upcoming", {
         headers: { Authorization: `Bearer ${token}` },
       })
+      console.log(response.data.schedules)
       setSchedules(response.data.schedules)
     } catch (error) {
       console.error("Error fetching upcoming schedules:", error)
@@ -46,6 +47,14 @@ export default function Upcoming() {
       </View>
     )
   }
+  const handlePress = async (url: string) => {
+    const supported = await Linking.canOpenURL(url);
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      console.error("Cannot open URL:", url);
+    }
+  };
 
   return (
     <View style={css.container}>
@@ -58,14 +67,14 @@ export default function Upcoming() {
             <Text style={css.title}>{schedule.scheduleSubject}</Text>
             <Text style={css.trainerName}>With {schedule.trainer.name}</Text>
             <Text style={css.status}>{schedule.status}</Text>
-            {schedule.status === "upcoming" && (
+            {schedule.status === "pending" && (
               <LinearGradient
                 colors={["#08027a", "#382eff"]}
                 start={{ x: 1, y: 0.9 }}
                 end={{ x: 0.3, y: 0.8 }}
                 style={css.button}
               >
-                <TouchableOpacity onPress={() => window.open(schedule.scheduleLink, "_blank")}>
+                <TouchableOpacity onPress={() => handlePress(schedule.scheduleLink)}>
                   <Text style={css.btnText}>Join Now</Text>
                 </TouchableOpacity>
               </LinearGradient>
