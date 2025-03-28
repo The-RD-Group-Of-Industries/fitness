@@ -120,12 +120,24 @@ export default function Session() {
       value: "group",
     },
   ]
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set time to midnight to avoid timezone issues
+
 
   const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    const currentDate = selectedDate || date
-    setShowDatePicker(Platform.OS === "ios")
-    setDate(currentDate)
+        if (selectedDate) {
+      if (selectedDate < today) {
+        Alert.alert("Invalid Date", "You cannot select a past date.");
+      setShowDatePicker(false);
+
+      }
+      else {
+        const currentDate = selectedDate || date
+        setShowDatePicker(Platform.OS === "ios")
+        setDate(currentDate)
+      }
   }
+}
 
   const onChangeStartTime = (event: DateTimePickerEvent, selectedDate?: Date) => {
     const selectedTime = selectedDate || startTime
@@ -134,10 +146,30 @@ export default function Session() {
   }
 
   const onChangeEndTime = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    const selectedTime = selectedDate || endTime
-    setShowEndTimePicker(Platform.OS === "ios")
-    setEndTime(selectedTime)
-  }
+    if (!selectedDate) return; // Ensure a date is selected
+  
+    const startHours = startTime?.getHours();
+    const startMinutes = startTime?.getMinutes();
+    const selectedHours = selectedDate.getHours();
+    const selectedMinutes = selectedDate.getMinutes();
+  
+    // Condition 1: If the selected end time is completely invalid (earlier or same as start time)
+    if (startTime && (selectedHours < startHours || (selectedHours === startHours && selectedMinutes < startMinutes))) {
+      setShowEndTimePicker(false)
+      return Alert.alert("Invalid Time", "End time cannot be before Start time.");
+    }
+  
+    // Condition 2: If the selected end time is equal to the start time
+    if (startTime && selectedHours === startHours && selectedMinutes === startMinutes) {
+      setShowEndTimePicker(false)
+      return Alert.alert("End Time must be after Start Time", "Please select a time that is later than the Start Time.");
+    }
+  
+    setShowEndTimePicker(Platform.OS === "ios");
+    setEndTime(selectedDate);
+  };
+  
+  
 
   return (
     <>
@@ -192,7 +224,7 @@ export default function Session() {
                 value={startTime}
                 mode="time"
                 is24Hour={true}
-                display="default"
+                display="spinner"
                 onChange={onChangeStartTime}
               />
             )}
@@ -202,8 +234,9 @@ export default function Session() {
                 value={endTime}
                 mode="time"
                 is24Hour={true}
-                display="default"
+                display="spinner"
                 onChange={onChangeEndTime}
+                minimumDate={today}
               />
             )}
 
