@@ -10,7 +10,7 @@ workflows:
           npm install
       - name: Login to Expo
         script: |
-          npx expo login -u $EXPO_USERNAME -p $EXPO_PASSWORD
+          npx expo login -u devadarshpandit -p dynamic_adi0
       - name: EAS Build for iOS
         script: |
           npx eas build --platform ios --non-interactive --profile production
