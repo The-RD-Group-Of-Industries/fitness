@@ -8,6 +8,9 @@ workflows:
       - name: Install dependencies
         script: |
           npm install
+      - name: Install EAS CLI
+        script: |
+          npm install -g eas-cli
       - name: Login to Expo
         script: |
           npx expo login -u devadarshpandit -p dynamic_adi0
