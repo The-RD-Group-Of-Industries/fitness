@@ -113,12 +113,12 @@ export default function Session() {
       charge: 299,
       value: "personal",
     },
-    {
-      title: "Group Training",
-      subTitle: "Up to 5 people",
-      charge: 199,
-      value: "group",
-    },
+    // {
+    //   title: "Group Training",
+    //   subTitle: "Up to 5 people",
+    //   charge: 199,
+    //   value: "group",
+    // },
   ]
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Set time to midnight to avoid timezone issues
@@ -276,6 +276,7 @@ export default function Session() {
 
 const styles = StyleSheet.create({
   contentContainer: {
+    height: "100%",
     paddingBottom: 100,
   },
   container: {
