@@ -65,17 +65,19 @@ export default function Upcoming() {
           <View style={css.box} key={schedule.id}>
             <Text style={css.text}>{format(new Date(schedule.startTime), "MMM d, h:mm a")}</Text>
             <Text style={css.title}>{schedule.scheduleSubject}</Text>
-            <Text style={css.trainerName}>With {schedule.trainer.name}</Text>
-            <Text style={css.status}>{schedule.status}</Text>
-            {schedule.status === "pending" && (
+            {schedule.status !== "requested" && (
+              <Text style={css.trainerName}>With {schedule.trainer.name}</Text>
+            )}
+            <Text style={css.status}>{schedule.status.toUpperCase()}</Text>
+            {schedule.status === "pending" || schedule.status === "requested" && (
               <LinearGradient
-                colors={["#08027a", "#382eff"]}
+                colors={schedule.status === "requested" ? ["#08027a", "#382eff"] : ["#08027a90", "#382eff90"]}
                 start={{ x: 1, y: 0.9 }}
                 end={{ x: 0.3, y: 0.8 }}
                 style={css.button}
               >
-                <TouchableOpacity onPress={() => handlePress(schedule.scheduleLink)}>
-                  <Text style={css.btnText}>Join Now</Text>
+                <TouchableOpacity onPress={schedule.status === "requested" ? () => {} : () => handlePress(schedule.scheduleLink)}>
+                  <Text style={[css.btnText, schedule.status === "requested" && {color: "#ffffff60"}]}>{schedule.status === "requested" ? "Waiting for Approval" : "Join Now"}</Text>
                 </TouchableOpacity>
               </LinearGradient>
             )}
@@ -111,15 +113,15 @@ const css = StyleSheet.create({
   },
   text: {
     position: "absolute",
-    right: 20,
+    left: 10,
     top: 12,
-    fontSize: 20,
-    fontWeight: "900",
+    fontSize: 18,
+    fontWeight: "400",
     color: "white",
   },
   title: {
     color: "white",
-    fontSize: 20,
+    fontSize: 24,
     paddingTop: 40,
     fontWeight: "800",
   },
@@ -130,10 +132,11 @@ const css = StyleSheet.create({
     fontWeight: "600",
   },
   status: {
-    color: "white",
+    color: "#a1a1a1",
     marginTop: 4,
     fontSize: 14,
     fontWeight: "500",
+    
   },
   button: {
     position: "absolute",
