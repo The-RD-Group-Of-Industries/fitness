@@ -10,7 +10,7 @@ export default function OTPSCREEN() {
   const { register } = useAuth()
   const {email, registerd, password, name} = useLocalSearchParams<{email: string, registerd: string, name: string, password: string}>()
   const [Value, setNumber] = useState(0)
-  const [generated, setGenerated] = useState(0)
+  const [generated, setGenerated] = useState<u | number>(0)
   const [loading, setLoading] = useState(false)
 
   async function GenOtp() {
@@ -66,7 +66,7 @@ export default function OTPSCREEN() {
       />
       <View style={styles.content}>
         <Text style={styles.title}>Recover Your Account</Text>
-      <Text style={[styles.label, {color: '#382eff', marginBottom: 32, textAlign: "center"}]}>OTP has been sent successfully to {email}</Text>
+      <Text style={[styles.label, {color: '#382eff', marginBottom: 32, textAlign: "center"}]}>OTP has been sent successfully to {email}, {"\n"}<Text style={{color: "#ff5e5e"}}>Don't Forget to Check Spam Folder also.</Text></Text>
         <View style={styles.form}>
           <View style={styles.inputContainer}>
             {/* <Text style={styles.label}>OTP</Text> */}

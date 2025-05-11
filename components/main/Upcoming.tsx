@@ -66,6 +66,22 @@ export default function Upcoming() {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return format(date, "MMM d");
+  }
+  const formatTimeWithAMPM = (isoTimeString: string) => {
+    const timeStr = isoTimeString.split("T")[1].split(":").slice(0, 2).join(":");
+    const hour = parseInt(timeStr.split(":")[0]);
+    const minute = timeStr.split(":")[1];
+    
+    // Convert to 12-hour format
+    const hour12 = hour % 12 || 12;
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    
+    return `${hour12}:${minute} ${ampm}`;
+  };
+
   return (
     <View style={css.container}>
       <Text style={css.heading}>Upcoming</Text>
@@ -74,7 +90,9 @@ export default function Upcoming() {
         schedules.map((schedule) => (
           <View style={css.box} key={schedule.id}>
             <Text style={css.text}>
-              {format(new Date(schedule.startTime), "MMM d, h:mm a")}
+              {formatDate(schedule.date.split("T")[0])}{", "}
+              {formatTimeWithAMPM(schedule.startTime)}
+              {/* {formatTime(schedule.startTime.split("T")[1].split(":").slice(0, 2).join(":"))} */}
             </Text>
             <Text style={css.title}>{schedule.scheduleSubject}</Text>
             {schedule.status !== "requested" && (

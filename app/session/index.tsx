@@ -37,12 +37,29 @@ const DisplayBox = ({
 )
 
 export default function Session() {
+  const sessionTypes = [
+    {
+      title: "Personal Training",
+      subTitle: "1-on-1 session",
+      charge: 799,
+      value: "personal",
+    },
+    // {
+    //   title: "Group Training",
+    //   subTitle: "Up to 5 people",
+    //   charge: 199,
+    //   value: "group",
+    // },
+  ]
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const [trainers, setTrainers] = useState<DropdownItem[]>([])
   const [selectedTrainer, setSelectedTrainer] = useState("")
   const [date, setDate] = useState(new Date())
   const [startTime, setStartTime] = useState(new Date())
-  const [endTime, setEndTime] = useState(new Date())
-  const [sessionType, setSessionType] = useState("")
+  const [endTime, setEndTime] = useState(new Date(new Date().getTime() + 1 * 60 * 60 * 1000))
+  const [sessionType, setSessionType] = useState(sessionTypes[0].value)
   const [loading, setLoading] = useState(false)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showStartTimePicker, setShowStartTimePicker] = useState(false)
@@ -106,22 +123,6 @@ export default function Session() {
     }
   }
 
-  const sessionTypes = [
-    {
-      title: "Personal Training",
-      subTitle: "1-on-1 session",
-      charge: 299,
-      value: "personal",
-    },
-    // {
-    //   title: "Group Training",
-    //   subTitle: "Up to 5 people",
-    //   charge: 199,
-    //   value: "group",
-    // },
-  ]
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Set time to midnight to avoid timezone issues
 
 
   const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
@@ -134,42 +135,52 @@ export default function Session() {
       else {
         const currentDate = selectedDate || date
         setShowDatePicker(Platform.OS === "ios")
+        const newDate = new Date(date);
+        newDate.setHours(startTime.getHours(), startTime.getMinutes());
         setDate(currentDate)
+        setStartTime(newDate);
+  
       }
   }
 }
 
-  const onChangeStartTime = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    const selectedTime = selectedDate || startTime
-    setShowStartTimePicker(Platform.OS === "ios")
-    setStartTime(selectedTime)
+const onChangeStartTime = (event: any, selectedTime: any) => {
+  setShowStartTimePicker(false);
+  
+  if (selectedTime) {
+    const currentTime = new Date();
+    
+    // Check if selected time is in the past
+    if (selectedTime < currentTime) {
+      setStartTime(currentTime);
+      // Set end time to be 1 hour after current time
+      setEndTime(new Date(currentTime.getTime() + 1 * 60 * 60 * 1000));
+      alert('You cannot select a time in the past');
+    } else {
+      setStartTime(selectedTime);
+      setEndTime(new Date(selectedTime.getTime() + 1 * 60 * 60 * 1000));
+    }
   }
+};
 
-  const onChangeEndTime = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    if (!selectedDate) return; // Ensure a date is selected
+const formatDate = (date: any) => {
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+const formatTime = (time: any) => {
+  let hours = time.getHours();
+  let minutes = time.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
   
-    const startHours = startTime?.getHours();
-    const startMinutes = startTime?.getMinutes();
-    const selectedHours = selectedDate.getHours();
-    const selectedMinutes = selectedDate.getMinutes();
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  minutes = minutes < 10 ? '0' + minutes : minutes;
   
-    // Condition 1: If the selected end time is completely invalid (earlier or same as start time)
-    if (startTime && (selectedHours < startHours || (selectedHours === startHours && selectedMinutes < startMinutes))) {
-      setShowEndTimePicker(false)
-      return Alert.alert("Invalid Time", "End time cannot be before Start time.");
-    }
-  
-    // Condition 2: If the selected end time is equal to the start time
-    if (startTime && selectedHours === startHours && selectedMinutes === startMinutes) {
-      setShowEndTimePicker(false)
-      return Alert.alert("End Time must be after Start Time", "Please select a time that is later than the Start Time.");
-    }
-  
-    setShowEndTimePicker(Platform.OS === "ios");
-    setEndTime(selectedDate);
-  };
-  
-  
+  return `${hours}:${minutes} ${ampm}`;
+};
 
   return (
     <>
@@ -193,18 +204,18 @@ export default function Session() {
               <View style={styles.dateTimeContainer}>
                 <TouchableOpacity style={styles.dateTimePicker} onPress={() => setShowDatePicker(true)}>
                   <Text style={styles.dateTimeLabel}>Date:</Text>
-                  <Text style={styles.dateTimeValue}>{date.toLocaleDateString()}</Text>
+                  <Text style={styles.dateTimeValue}>{formatDate(date)}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.dateTimePicker} onPress={() => setShowStartTimePicker(true)}>
                   <Text style={styles.dateTimeLabel}>Start Time:</Text>
-                  <Text style={styles.dateTimeValue}>{startTime.toLocaleTimeString()}</Text>
+                  <Text style={styles.dateTimeValue}>{formatTime(startTime)}</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.dateTimePicker} onPress={() => setShowEndTimePicker(true)}>
+                <View style={styles.dateTimePicker}>
                   <Text style={styles.dateTimeLabel}>End Time:</Text>
-                  <Text style={styles.dateTimeValue}>{endTime.toLocaleTimeString()}</Text>
-                </TouchableOpacity>
+                  <Text style={styles.dateTimeValue}>{formatTime(endTime)} {"(+60min)"}</Text>
+                </View>
               </View>
             </DisplayBox>
 
@@ -223,19 +234,9 @@ export default function Session() {
                 testID="startTimePicker"
                 value={startTime}
                 mode="time"
-                is24Hour={true}
+                is24Hour={false}
                 display="spinner"
                 onChange={onChangeStartTime}
-              />
-            )}
-            {showEndTimePicker && (
-              <DateTimePicker
-                testID="endTimePicker"
-                value={endTime}
-                mode="time"
-                is24Hour={true}
-                display="spinner"
-                onChange={onChangeEndTime}
                 minimumDate={today}
               />
             )}
