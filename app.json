@@ -11,7 +11,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.fitness.evolution",
       "icon": "./assets/images/icon.png",
-      "buildNumber": "8.1.0",     
+      "buildNumber": "8.1.0",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -63,7 +63,9 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

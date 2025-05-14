@@ -70,16 +70,61 @@ export default function Upcoming() {
     const date = new Date(dateString);
     return format(date, "MMM d");
   }
+
   const formatTimeWithAMPM = (isoTimeString: string) => {
-    const timeStr = isoTimeString.split("T")[1].split(":").slice(0, 2).join(":");
-    const hour = parseInt(timeStr.split(":")[0]);
-    const minute = timeStr.split(":")[1];
-    
-    // Convert to 12-hour format
-    const hour12 = hour % 12 || 12;
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    
-    return `${hour12}:${minute} ${ampm}`;
+    try {
+      // Create a Date object from the ISO string
+      // This automatically handles timezone conversion to local time
+      const date = new Date(isoTimeString);
+      
+      // Check if the date is valid
+      if (isNaN(date.getTime())) {
+        console.error("Invalid date string:", isoTimeString);
+        return "Invalid time";
+      }
+      
+      // Get hours and minutes in local timezone
+      let hours = date.getHours();
+      let minutes = date.getMinutes();
+      
+      // Convert to 12-hour format
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+      
+      // Pad minutes with leading zero if needed
+      const minutesStr = minutes < 10 ? `0${minutes}` : `${minutes}`;
+      
+      return `${hours}:${minutesStr} ${ampm}`;
+    } catch (error) {
+      console.error("Error formatting time:", error);
+      return "Time format error";
+    }
+  };
+
+  const formatDateAndTime = (isoTimeString: string) => {
+    try {
+      const date = new Date(isoTimeString);
+      
+      if (isNaN(date.getTime())) {
+        return "Invalid date/time";
+      }
+      
+      // Format date: May 16, 2025
+      const options: Intl.DateTimeFormatOptions = { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      };
+      const dateStr = date.toLocaleDateString(undefined, options);
+      
+      // Get formatted time
+      const timeStr = formatTimeWithAMPM(isoTimeString);
+      
+      return `${dateStr} at ${timeStr}`;
+    } catch (error) {
+      console.error("Error formatting date and time:", error);
+      return "Date/time format error";
+    }
   };
 
   return (
@@ -90,8 +135,8 @@ export default function Upcoming() {
         schedules.map((schedule) => (
           <View style={css.box} key={schedule.id}>
             <Text style={css.text}>
-              {formatDate(schedule.date.split("T")[0])}{", "}
-              {formatTimeWithAMPM(schedule.startTime)}
+              {/* {formatDate(schedule.date.split("T")[0])}{", "} */}
+              {formatDateAndTime(schedule.startTime)}
               {/* {formatTime(schedule.startTime.split("T")[1].split(":").slice(0, 2).join(":"))} */}
             </Text>
             <Text style={css.title}>{schedule.scheduleSubject}</Text>

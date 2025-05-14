@@ -133,12 +133,12 @@ export default function Session() {
 
       }
       else {
-        const currentDate = selectedDate || date
+        const currentDate = selectedDate
         setShowDatePicker(Platform.OS === "ios")
         const newDate = new Date(date);
         newDate.setHours(startTime.getHours(), startTime.getMinutes());
         setDate(currentDate)
-        setStartTime(newDate);
+        setStartTime(currentDate);
   
       }
   }
@@ -149,17 +149,15 @@ const onChangeStartTime = (event: any, selectedTime: any) => {
   
   if (selectedTime) {
     const currentTime = new Date();
-    
-    // Check if selected time is in the past
-    if (selectedTime < currentTime) {
-      setStartTime(currentTime);
-      // Set end time to be 1 hour after current time
-      setEndTime(new Date(currentTime.getTime() + 1 * 60 * 60 * 1000));
-      alert('You cannot select a time in the past');
-    } else {
-      setStartTime(selectedTime);
-      setEndTime(new Date(selectedTime.getTime() + 1 * 60 * 60 * 1000));
-    }
+      if (selectedTime < currentTime) {
+        setStartTime(currentTime);
+        setEndTime(new Date(currentTime.getTime() + 1 * 60 * 60 * 1000));
+        alert('You cannot select a time in the past');
+      } 
+      else {
+        setStartTime(selectedTime);
+        setEndTime(new Date(selectedTime.getTime() + 1 * 60 * 60 * 1000));
+      }
   }
 };
 
@@ -176,7 +174,7 @@ const formatTime = (time: any) => {
   const ampm = hours >= 12 ? 'PM' : 'AM';
   
   hours = hours % 12;
-  hours = hours ? hours : 12; // the hour '0' should be '12'
+  hours = hours ? hours : 12;
   minutes = minutes < 10 ? '0' + minutes : minutes;
   
   return `${hours}:${minutes} ${ampm}`;
@@ -227,6 +225,8 @@ const formatTime = (time: any) => {
                 is24Hour={true}
                 display="default"
                 onChange={onChangeDate}
+                minimumDate={new Date()}
+                maximumDate={new Date(new Date().setMonth(new Date().getMonth() + 2))}
               />
             )}
             {showStartTimePicker && (
