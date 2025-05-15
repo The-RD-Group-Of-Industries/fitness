@@ -139,7 +139,8 @@ export default function Session() {
         newDate.setHours(startTime.getHours(), startTime.getMinutes());
         setDate(currentDate)
         setStartTime(currentDate);
-  
+        setEndTime(new Date(currentDate.getTime() + 1 * 60 * 60 * 1000));
+       
       }
   }
 }
@@ -226,7 +227,7 @@ const formatTime = (time: any) => {
                 display="default"
                 onChange={onChangeDate}
                 minimumDate={new Date()}
-                maximumDate={new Date(new Date().setMonth(new Date().getMonth() + 2))}
+                maximumDate={new Date(new Date().setMonth(new Date().getMonth() + 3))}
               />
             )}
             {showStartTimePicker && (
