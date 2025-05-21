@@ -65,17 +65,11 @@ export default function Trainer() {
         {trainers.map((trainer, idx) => (
           <View style={style.box} key={trainer.id || idx}>
             <View style={style.image}>
-              <Image
-                alt="avatar"
-                source={trainer.image ? { uri: trainer.image } : require("@/assets/images/pfp.jpg")}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                }}
-                width={1080}
-                height={1080}
-              />
+            <Image 
+            source={trainer.image ? {uri: trainer.image} : require("@/assets/images/pfp.jpg")}
+            style={{ width: "100%", height: "100%", borderRadius: 14 }}
+            resizeMode="cover"
+            />
             </View>
             <Text style={style.title}>{trainer.name}</Text>
             {trainer.specialization && <Text style={style.subHeading}>{trainer.specialization}</Text>}
@@ -105,6 +99,7 @@ const style = StyleSheet.create({
     height: "75%", // Reduced height to accommodate specialization text
     borderRadius: 14,
     overflow: "hidden",
+    // backgroundColor: "red"
   },
   title: {
     color: "white",

@@ -249,7 +249,7 @@ const formatTime = (time: any) => {
                   style={[styles.longBox, sessionType === type.value && styles.selectedBox]}
                   onPress={() => setSessionType(type.value)}
                 >
-                  <Text style={styles.charge}>₹{type.charge}/hr</Text>
+                  {/* <Text style={styles.charge}>₹{type.charge}/hr</Text> */}
                   <Text style={styles.text}>{type.title}</Text>
                   <Text style={styles.subTxt}>{type.subTitle}</Text>
                 </TouchableOpacity>
