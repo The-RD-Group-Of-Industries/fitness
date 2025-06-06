@@ -10,7 +10,7 @@ import React, { useEffect, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { format } from "date-fns";
+import * as WebBrowser from "expo-web-browser";
 
 interface Schedule {
   id: string;
@@ -57,19 +57,31 @@ export default function Upcoming() {
       </View>
     );
   }
-  const handlePress = async (url: string) => {
+
+const handlePress = async (url: string) => {
+  const appDeepLinks = ['zoomus://', 'msteams://', 'meet://'];
+  const isAppDeepLink = appDeepLinks.some(scheme => url.startsWith(scheme));
+
+  if (isAppDeepLink) {
     const supported = await Linking.canOpenURL(url);
     if (supported) {
-      await Linking.openURL(url);
+      try {
+        await Linking.openURL(url);
+      } catch (error) {
+        console.error("Failed to open app URL:", error);
+      }
     } else {
-      console.error("Cannot open URL:", url);
+      console.error("App not installed or cannot open URL:", url);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return format(date, "MMM d");
+  } else {
+    try {
+      await WebBrowser.openBrowserAsync(url);
+    } catch (error) {
+      console.error("Failed to open in browser:", error);
+    }
   }
+};
+
 
   const formatTimeWithAMPM = (isoTimeString: string) => {
     try {
