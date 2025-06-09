@@ -9,7 +9,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.fitness.evolution",
+      "bundleIdentifier": "com.fitness.evolution.app",
       "icon": "./assets/images/icon.png",
       "buildNumber": "8.1.0",
       "infoPlist": {
