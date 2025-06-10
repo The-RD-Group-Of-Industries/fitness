@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform } from "react-native"
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform, SafeAreaView, StatusBar } from "react-native"
 import type React from "react"
 import { useEffect, useState } from "react"
 import { Stack } from "expo-router"
@@ -182,7 +182,8 @@ const formatTime = (time: any) => {
 };
 
   return (
-    <>
+        // <SafeAreaView style={{ flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, }}>
+          <ThemedView style={{ flex: 1}}>
       <Stack.Screen
         options={{
           headerTitle: "Book a session",
@@ -192,7 +193,6 @@ const formatTime = (time: any) => {
           headerTintColor: "#fff",
         }}
       />
-      <ThemedView>
 
       <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={styles.contentContainer}>
         <View style={styles.container}>
@@ -272,7 +272,7 @@ const formatTime = (time: any) => {
         </View>
       </ScrollView>
   </ThemedView>
-    </>
+    // </SafeAreaView>
   )
 }
 

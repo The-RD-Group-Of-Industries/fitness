@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react"
-import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, ActivityIndicator } from "react-native"
+import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, ActivityIndicator, Platform, StatusBar } from "react-native"
 import { Stack } from "expo-router"
 import axios from "axios"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useThemeColor } from "@/hooks/useThemeColor"
 import { useRouter } from "expo-router"
+import { SafeAreaView } from "react-native"
+import { ThemedView } from "@/components/ThemedView"
 
 interface Trainer {
   id: string
@@ -91,9 +93,8 @@ export default function ChatsScreen() {
   }
 
   return (
-    <>
+    <ThemedView style={{ flex: 1 }}>
       <Stack.Screen options={{ title: "Chats", 
-      
       headerStyle: {
         backgroundColor: "#090E26",
       }, headerTintColor: "#fff", headerTitleStyle: {
@@ -139,7 +140,7 @@ export default function ChatsScreen() {
           style={styles.trainerList}
         />
       </View>
-    </>
+    </ThemedView>
   )
 }
 
@@ -148,6 +149,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#090E21",
     padding: 16,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   loadingContainer: {
     flex: 1,

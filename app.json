@@ -2,16 +2,17 @@
   "expo": {
     "name": "Fitness Evolution",
     "slug": "fitness",
-    "version": "8.1.6",
+    "version": "8.1.7",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
+    
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.fitness.evolution.app",
       "icon": "./assets/images/icon.png",
-      "buildNumber": "8.1.0",
+      "buildNumber": "8.1.8",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }

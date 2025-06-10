@@ -10,13 +10,12 @@ import {
   Platform, 
   StatusBar,
   PixelRatio,
-  ScrollView
+  ScrollView,
+  Alert
 } from "react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather, Ionicons, SimpleLineIcons } from "@expo/vector-icons";
-import Fontisto from "@expo/vector-icons/Fontisto";
-import Entypo from "@expo/vector-icons/Entypo";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ThemedView } from "@/components/ThemedView";
@@ -113,6 +112,59 @@ const TabTwoScreen: React.FC = () => {
     fetchUserData();
   }, []);
 
+  const deleteAccount = async () => {
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      const req = await axios.delete("https://fitness-admin-tau.vercel.app/api/mobile/user", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      await AsyncStorage.removeItem("userToken");
+      if (req.status === 200) {
+        logout();
+      }
+    } catch (error) {
+      console.error("Error deleting account:", error);
+    }
+  }
+
+  function askToDelete() {
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account?\n\nThis action cannot be undone!",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: deleteAccount,
+        },
+      ],
+      { cancelable: true }
+    );
+  }
+
+  function askToLogout() {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: logout,
+        },
+      ],
+      { cancelable: true }
+    );
+  }
+
   const options: OptionItem[] = [
     // {
     //   title: "Settings",
@@ -188,12 +240,20 @@ const TabTwoScreen: React.FC = () => {
                   </TouchableOpacity>
                 ))}
 
-<TouchableOpacity style={styles.smallCard} activeOpacity={0.7} onPress={logout}>
+<TouchableOpacity style={styles.smallCard} activeOpacity={0.7} onPress={askToLogout}>
                     <View style={styles.content}>
-                    <SimpleLineIcons name="logout" size={22} color="#ff003c" />
+                    <SimpleLineIcons name="logout" size={22} color="orange" />
                       <Text style={[styles.text, { color }]}>Logout</Text>
                     </View>
-                  </TouchableOpacity>
+</TouchableOpacity>
+
+
+<TouchableOpacity style={styles.smallCard} activeOpacity={0.7} onPress={askToDelete}>
+                    <View style={styles.content}>
+                    <Ionicons name="trash-outline" size={22} color="#ff003c" />
+                      <Text style={[styles.text, { color }]}>Delete Your Account</Text>
+                    </View>
+</TouchableOpacity>
               </View>
             </View>
           </View>
@@ -241,7 +301,7 @@ const styles = StyleSheet.create({
     width: isTablet() ? wp(80) : wp(92),
     backgroundColor: primary,
     borderRadius: normalize(16),
-    padding: normalize(16), // Increased padding
+    padding: normalize(14), // Increased padding
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: hp(3), // Increased margin
@@ -253,11 +313,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4.65,
     elevation: 8,
-    minHeight: hp(20), // Ensure minimum height
+    minHeight: hp(18), // Ensure minimum height
   },
   modCircle: {
-    width: normalize(88),
-    height: normalize(88),
+    width: normalize(70),
+    height: normalize(70),
     borderRadius: normalize(55),
     justifyContent: 'center',
     alignItems: 'center',
@@ -282,13 +342,13 @@ const styles = StyleSheet.create({
   name: {
     color: 'white',
     fontWeight: '700',
-    fontSize: normalize(26), // Increased size
+    fontSize: normalize(20), // Increased size
     marginBottom: hp(1),
   },
   email: {
     color: 'gray',
     fontWeight: '400',
-    fontSize: normalize(18), // Increased size
+    fontSize: normalize(12), // Increased size
   },
   optionsContainer: {
     width: '100%',
@@ -319,7 +379,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
-    fontSize: normalize(18), // Increased text size
+    fontSize: normalize(16), // Increased text size
     fontWeight: '600',
     marginLeft: wp(4), // Increased spacing
   },
