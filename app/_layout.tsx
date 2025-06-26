@@ -10,6 +10,7 @@ import * as Linking from "expo-linking";
 
 import { useColorScheme } from "@/hooks/useColorScheme"
 import { AuthProvider } from "@/context/AuthContext"
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context"
 
 const InstallInstructions = () => {
   return (
@@ -68,7 +69,9 @@ export default function RootLayout() {
 
   return showInstallPage ? <InstallInstructions /> : (
     <AuthProvider>
+      <SafeAreaProvider>
       <ThemeProvider value={DarkTheme}>
+        {/* <SafeAreaView> */}
         <Stack>
           <Stack.Screen name="welcome" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -78,7 +81,9 @@ export default function RootLayout() {
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />
+        {/* </SafeAreaView> */}
       </ThemeProvider>
+      </SafeAreaProvider>
     </AuthProvider>
   )
 }

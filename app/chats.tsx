@@ -93,7 +93,7 @@ export default function ChatsScreen() {
   }
 
   return (
-    <ThemedView style={{ flex: 1 }}>
+    <ThemedView>
       <Stack.Screen options={{ title: "Chats", 
       headerStyle: {
         backgroundColor: "#090E26",

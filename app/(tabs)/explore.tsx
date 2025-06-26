@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { View, ScrollView, TouchableOpacity, StyleSheet } from "react-native"
+import { View, ScrollView, TouchableOpacity, StyleSheet, Platform } from "react-native"
 import { ThemedText } from "@/components/ThemedText"
 import { ThemedView } from "@/components/ThemedView"
 import { useAuth } from "@/context/AuthContext"
@@ -71,12 +71,12 @@ export default function ExploreScreen() {
   }
 
   const components: Partial<PortableTextReactComponents> = {
-    block: ({ children }) => <ThemedText style={styles.postContent}>{children}</ThemedText>,
+    block: ({ children }) => <ThemedText>{children}</ThemedText>,
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+    <ScrollView style={styles.scrollView}>
+        <ThemedView>
         <ThemedText style={styles.header}>Fitness Community</ThemedText>
         {posts.map((post) => (
           <View key={post._id} style={styles.postCard}>
@@ -102,8 +102,8 @@ export default function ExploreScreen() {
             </View>
           </View>
         ))}
-      </ScrollView>
     </ThemedView>
+      </ScrollView>
   )
 }
 
@@ -151,12 +151,6 @@ const styles = StyleSheet.create({
   publishDate: {
     fontSize: 12,
     color: "#8E8E93",
-  },
-  postContent: {
-    fontSize: 16,
-    color: "#ffffff",
-    marginBottom: 16,
-    lineHeight: 24,
   },
   postActions: {
     flexDirection: "row",

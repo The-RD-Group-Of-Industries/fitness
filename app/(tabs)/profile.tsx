@@ -193,8 +193,8 @@ const TabTwoScreen: React.FC = () => {
   ];
   
   return (
-      <ThemedView style={styles.themedView}>
-    <SafeAreaView style={styles.safeArea}>
+      <ThemedView>
+    {/* <SafeAreaView style={styles.safeArea}> */}
         <ScrollView 
           contentContainerStyle={styles.scrollViewContent}
           showsVerticalScrollIndicator={false}
@@ -258,7 +258,7 @@ const TabTwoScreen: React.FC = () => {
             </View>
           </View>
         </ScrollView>
-    </SafeAreaView>
+    {/* </SafeAreaView> */}
       </ThemedView>
   );
 };

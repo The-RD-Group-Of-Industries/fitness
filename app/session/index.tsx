@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform, SafeAreaView, StatusBar } from "react-native"
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform, SafeAreaView, StatusBar, useColorScheme } from "react-native"
 import type React from "react"
 import { useEffect, useState } from "react"
 import { Stack } from "expo-router"
@@ -66,23 +66,7 @@ export default function Session() {
   const [showEndTimePicker, setShowEndTimePicker] = useState(false)
   const router = useRouter()
 
-  // useEffect(() => {
-  //   fetchTrainers()
-  // }, [])
-
-  // const fetchTrainers = async () => {
-  //   try {
-  //     const response = await axios.get<{ users: Trainer[] }>("https://fitness-admin-tau.vercel.app/api/mobile/users/trainer")
-  //     const formattedTrainers: DropdownItem[] = response.data.users.map((trainer: Trainer) => ({
-  //       label: trainer.name || trainer.email,
-  //       value: trainer.id,
-  //     }))
-  //     setTrainers(formattedTrainers)
-  //   } catch (error) {
-  //     console.error("Error fetching trainers:", error)
-  //     Alert.alert("Error", "Failed to fetch trainers")
-  //   }
-  // }
+  const colorScheme = useColorScheme()
 
   const handleSubmit = async () => {
     if (!sessionType) {
@@ -183,7 +167,7 @@ const formatTime = (time: any) => {
 
   return (
         // <SafeAreaView style={{ flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, }}>
-          <ThemedView style={{ flex: 1}}>
+          <ThemedView>
       <Stack.Screen
         options={{
           headerTitle: "Book a session",
@@ -228,6 +212,7 @@ const formatTime = (time: any) => {
                 onChange={onChangeDate}
                 minimumDate={new Date()}
                 maximumDate={new Date(new Date().setMonth(new Date().getMonth() + 3))}
+                themeVariant={'light'}
               />
             )}
             {showStartTimePicker && (
@@ -239,6 +224,7 @@ const formatTime = (time: any) => {
                 display="spinner"
                 onChange={onChangeStartTime}
                 minimumDate={today}
+                themeVariant={'light'}
               />
             )}
 

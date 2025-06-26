@@ -15,8 +15,8 @@ export function ThemedText({
   type = 'default',
   ...rest
 }: ThemedTextProps) {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
-
+  // const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  const color = "#ffffff"
   return (
     <Text
       style={[
@@ -36,16 +36,19 @@ export function ThemedText({
 const styles = StyleSheet.create({
   default: {
     fontSize: 16,
+    color: "white",
     lineHeight: 24,
   },
   defaultSemiBold: {
     fontSize: 16,
+    color: "white",
     lineHeight: 24,
     fontWeight: '600',
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
+    color: "white",
     lineHeight: 32,
   },
   subtitle: {
@@ -53,8 +56,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   link: {
+    color: "white",
     lineHeight: 30,
     fontSize: 16,
-    color: '#0a7ea4',
   },
 });

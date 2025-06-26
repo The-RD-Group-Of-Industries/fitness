@@ -211,7 +211,7 @@ const handlePress = async (url: string) => {
 
 const css = StyleSheet.create({
   container: {
-    marginTop: 40,
+    marginTop: 4,
     paddingHorizontal: 10,
   },
   heading: {
