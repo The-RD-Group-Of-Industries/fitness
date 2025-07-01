@@ -76,8 +76,8 @@ export default function RootLayout() {
           <Stack.Screen name="welcome" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="auth" options={{ headerShown: false }} />
-          <Stack.Screen name="session/index" options={{ headerShown: true }} />
-          <Stack.Screen name="chats/[trainerId]" options={{ headerShown: true }} />
+          <Stack.Screen name="session/index" options={{ headerShown: true, headerBackTitle: '', headerBackButtonDisplayMode: 'minimal' }} />
+          <Stack.Screen name="chats/[trainerId]" options={{ headerShown: true, headerBackTitle: '', headerBackButtonDisplayMode: 'minimal' }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />

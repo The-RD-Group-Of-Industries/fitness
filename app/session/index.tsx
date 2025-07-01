@@ -1,24 +1,37 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform, SafeAreaView, StatusBar, useColorScheme } from "react-native"
-import type React from "react"
-import { useEffect, useState } from "react"
-import { Stack } from "expo-router"
-import CustomDropdown from "@/components/ui/DropDown"
-import { LinearGradient } from "expo-linear-gradient"
-import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker"
-import axios from "axios"
-import AsyncStorage from "@react-native-async-storage/async-storage"
-import { useRouter } from "expo-router"
-import { ThemedView } from "@/components/ThemedView"
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  Platform,
+  SafeAreaView,
+  StatusBar,
+  useColorScheme,
+} from "react-native";
+import type React from "react";
+import { useEffect, useState } from "react";
+import { Stack } from "expo-router";
+import CustomDropdown from "@/components/ui/DropDown";
+import { LinearGradient } from "expo-linear-gradient";
+import DateTimePicker, {
+  type DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import { ThemedView } from "@/components/ThemedView";
 
 interface Trainer {
-  id: string
-  name: string | null
-  email: string
+  id: string;
+  name: string | null;
+  email: string;
 }
 
 interface DropdownItem {
-  label: string
-  value: string
+  label: string;
+  value: string;
 }
 
 const DisplayBox = ({
@@ -26,15 +39,15 @@ const DisplayBox = ({
   children,
   long = false,
 }: {
-  title: string
-  children: React.ReactNode
-  long?: boolean
+  title: string;
+  children: React.ReactNode;
+  long?: boolean;
 }) => (
   <View style={styles.box}>
     <Text style={styles.text}>{title}</Text>
     <View style={long ? styles.col : styles.row}>{children}</View>
   </View>
-)
+);
 
 export default function Session() {
   const sessionTypes = [
@@ -50,33 +63,35 @@ export default function Session() {
     //   charge: 199,
     //   value: "group",
     // },
-  ]
+  ];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [trainers, setTrainers] = useState<DropdownItem[]>([])
-  const [selectedTrainer, setSelectedTrainer] = useState("")
-  const [date, setDate] = useState(new Date())
-  const [startTime, setStartTime] = useState(new Date())
-  const [endTime, setEndTime] = useState(new Date(new Date().getTime() + 1 * 60 * 60 * 1000))
-  const [sessionType, setSessionType] = useState(sessionTypes[0].value)
-  const [loading, setLoading] = useState(false)
-  const [showDatePicker, setShowDatePicker] = useState(false)
-  const [showStartTimePicker, setShowStartTimePicker] = useState(false)
-  const [showEndTimePicker, setShowEndTimePicker] = useState(false)
-  const router = useRouter()
+  const [trainers, setTrainers] = useState<DropdownItem[]>([]);
+  const [selectedTrainer, setSelectedTrainer] = useState("");
+  const [date, setDate] = useState(new Date());
+  const [startTime, setStartTime] = useState(new Date());
+  const [endTime, setEndTime] = useState(
+    new Date(new Date().getTime() + 1 * 60 * 60 * 1000)
+  );
+  const [sessionType, setSessionType] = useState(sessionTypes[0].value);
+  const [loading, setLoading] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  const router = useRouter();
 
-  const colorScheme = useColorScheme()
+  const colorScheme = useColorScheme();
 
   const handleSubmit = async () => {
     if (!sessionType) {
-      Alert.alert("Error", "Please select a session type")
-      return
+      Alert.alert("Error", "Please select a session type");
+      return;
     }
 
     try {
-      setLoading(true)
-      const token = await AsyncStorage.getItem("userToken")
+      setLoading(true);
+      const token = await AsyncStorage.getItem("userToken");
       await axios.post(
         "https://fitness-admin-tau.vercel.app/api/mobile/schedule/create",
         {
@@ -91,86 +106,81 @@ export default function Session() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        },
-      )
+        }
+      );
       Alert.alert("Success", "Session scheduled successfully!", [
         {
           text: "OK",
           onPress: () => router.push("/(tabs)"),
         },
-      ])
+      ]);
     } catch (error) {
-      console.error("Error scheduling session:", error)
-      Alert.alert("Error", "Failed to schedule session")
+      console.error("Error scheduling session:", error);
+      Alert.alert("Error", "Failed to schedule session");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-
-
+  };
 
   const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
-        if (selectedDate) {
+    if (selectedDate) {
       if (selectedDate < today) {
         Alert.alert("Invalid Date", "You cannot select a past date.");
-      setShowDatePicker(false);
-
-      }
-      else {
-        const currentDate = selectedDate
-        setShowDatePicker(Platform.OS === "ios")
+        setShowDatePicker(false);
+      } else {
+        const currentDate = selectedDate;
+        setShowDatePicker(Platform.OS === "ios");
         const newDate = new Date(date);
         newDate.setHours(startTime.getHours(), startTime.getMinutes());
-        setDate(currentDate)
+        setDate(currentDate);
         setStartTime(currentDate);
         setEndTime(new Date(currentDate.getTime() + 1 * 60 * 60 * 1000));
-       
       }
-  }
-}
+    }
+  };
 
-const onChangeStartTime = (event: any, selectedTime: any) => {
-  setShowStartTimePicker(false);
-  
-  if (selectedTime) {
-    const currentTime = new Date();
+  const onChangeStartTime = (event: any, selectedTime: any) => {
+    setShowStartTimePicker(false);
+
+    if (selectedTime) {
+      const currentTime = new Date();
       if (selectedTime < currentTime) {
         setStartTime(currentTime);
         setEndTime(new Date(currentTime.getTime() + 1 * 60 * 60 * 1000));
-        alert('You cannot select a time in the past');
-      } 
-      else {
+        alert("You cannot select a time in the past");
+      } else {
         setStartTime(selectedTime);
         setEndTime(new Date(selectedTime.getTime() + 1 * 60 * 60 * 1000));
       }
-  }
-};
+    }
+  };
 
-const formatDate = (date: any) => {
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-};
+  const formatDate = (date: any) => {
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
 
-const formatTime = (time: any) => {
-  let hours = time.getHours();
-  let minutes = time.getMinutes();
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  minutes = minutes < 10 ? '0' + minutes : minutes;
-  
-  return `${hours}:${minutes} ${ampm}`;
-};
+  const formatTime = (time: any) => {
+    let hours = time.getHours();
+    let minutes = time.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    minutes = minutes < 10 ? "0" + minutes : minutes;
+
+    return `${hours}:${minutes} ${ampm}`;
+  };
 
   return (
-        // <SafeAreaView style={{ flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, }}>
-          <ThemedView>
+    // <SafeAreaView style={{ flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, }}>
+    <ThemedView>
       <Stack.Screen
         options={{
           headerTitle: "Book a session",
+          headerBackButtonDisplayMode: "minimal",
           headerStyle: {
             backgroundColor: "#090E26",
           },
@@ -178,61 +188,99 @@ const formatTime = (time: any) => {
         }}
       />
 
-      <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={styles.contentContainer}>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.contentContainer}
+      >
         <View style={styles.container}>
           <View style={styles.child}>
             <Text style={styles.heading}>Book Training Session</Text>
 
             <DisplayBox title="Schedule">
               <View style={styles.dateTimeContainer}>
-                <TouchableOpacity style={styles.dateTimePicker} onPress={() => setShowDatePicker(true)}>
+                <TouchableOpacity
+                  style={styles.dateTimePicker}
+                  onPress={() => setShowDatePicker(true)}
+                >
                   <Text style={styles.dateTimeLabel}>Date:</Text>
                   <Text style={styles.dateTimeValue}>{formatDate(date)}</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.dateTimePicker} onPress={() => setShowStartTimePicker(true)}>
+                <TouchableOpacity
+                  style={styles.dateTimePicker}
+                  onPress={() => setShowStartTimePicker(true)}
+                >
                   <Text style={styles.dateTimeLabel}>Start Time:</Text>
-                  <Text style={styles.dateTimeValue}>{formatTime(startTime)}</Text>
+                  <Text style={styles.dateTimeValue}>
+                    {formatTime(startTime)}
+                  </Text>
                 </TouchableOpacity>
 
                 <View style={styles.dateTimePicker}>
                   <Text style={styles.dateTimeLabel}>End Time:</Text>
-                  <Text style={styles.dateTimeValue}>{formatTime(endTime)} {"(+60min)"}</Text>
+                  <Text style={styles.dateTimeValue}>
+                    {formatTime(endTime)} {"(+60min)"}
+                  </Text>
                 </View>
               </View>
             </DisplayBox>
 
             {showDatePicker && (
-              <DateTimePicker
-                testID="datePicker"
-                value={date}
-                mode="date"
-                is24Hour={true}
-                display="default"
-                onChange={onChangeDate}
-                minimumDate={new Date()}
-                maximumDate={new Date(new Date().setMonth(new Date().getMonth() + 3))}
-                themeVariant={'light'}
-              />
+              <View
+                style={{
+                  backgroundColor:
+                    Platform.OS === "ios" ? "#fff" : "transparent", // Light background for iOS
+                  borderRadius: 10, padding: 4
+                }}
+              >
+                <DateTimePicker
+                  testID="datePicker"
+                  value={date}
+                  mode="date"
+                  is24Hour={true}
+                  display="default"
+                  onChange={onChangeDate}
+                  minimumDate={new Date()}
+                  maximumDate={
+                    new Date(new Date().setMonth(new Date().getMonth() + 3))
+                  }
+                  themeVariant={"light"}
+                  {...(Platform.OS === "ios" && { textColor: "#000" })}
+                />
+              </View>
             )}
             {showStartTimePicker && (
-              <DateTimePicker
-                testID="startTimePicker"
-                value={startTime}
-                mode="time"
-                is24Hour={false}
-                display="spinner"
-                onChange={onChangeStartTime}
-                minimumDate={today}
-                themeVariant={'light'}
-              />
+              <View
+                style={{
+                  backgroundColor:
+                    Platform.OS === "ios" ? "#fff" : "transparent",
+                  borderRadius: 10, padding: 4
+                }}
+              >
+                <DateTimePicker
+                  testID="startTimePicker"
+                  value={startTime}
+                  mode="time"
+                  is24Hour={false}
+                  display="spinner"
+                  onChange={onChangeStartTime}
+                  minimumDate={today}
+                  themeVariant={"light"}
+                  // textColor="red"
+                  {...(Platform.OS === "ios" && { textColor: "#000" })}
+                />
+              </View>
             )}
 
             <DisplayBox title="Session Type" long>
               {sessionTypes.map((type, index) => (
                 <TouchableOpacity
                   key={index}
-                  style={[styles.longBox, sessionType === type.value && styles.selectedBox]}
+                  style={[
+                    styles.longBox,
+                    sessionType === type.value && styles.selectedBox,
+                  ]}
                   onPress={() => setSessionType(type.value)}
                 >
                   {/* <Text style={styles.charge}>₹{type.charge}/hr</Text> */}
@@ -251,15 +299,17 @@ const formatTime = (time: any) => {
               style={styles.button}
             >
               <TouchableOpacity onPress={handleSubmit} disabled={loading}>
-                <Text style={styles.btnText}>{loading ? "Scheduling..." : "Schedule Session"}</Text>
+                <Text style={styles.btnText}>
+                  {loading ? "Scheduling..." : "Schedule Session"}
+                </Text>
               </TouchableOpacity>
             </LinearGradient>
           </View>
         </View>
       </ScrollView>
-  </ThemedView>
+    </ThemedView>
     // </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -369,4 +419,4 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
   },
-})
+});
