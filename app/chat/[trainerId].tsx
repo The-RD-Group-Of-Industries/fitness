@@ -168,6 +168,7 @@ export default function ChatScreen() {
     <View style={styles.container}>
       <Stack.Screen
         options={{
+          headerBackButtonDisplayMode: "minimal",
           headerStyle: {
             backgroundColor: "#090E21",
           },

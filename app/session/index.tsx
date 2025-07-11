@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   StatusBar,
   useColorScheme,
+  Keyboard,
 } from "react-native";
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -201,7 +202,7 @@ export default function Session() {
               <View style={styles.dateTimeContainer}>
                 <TouchableOpacity
                   style={styles.dateTimePicker}
-                  onPress={() => setShowDatePicker(true)}
+                  onPress={() => {Keyboard.dismiss(), setShowDatePicker(true)}}
                 >
                   <Text style={styles.dateTimeLabel}>Date:</Text>
                   <Text style={styles.dateTimeValue}>{formatDate(date)}</Text>
@@ -209,7 +210,7 @@ export default function Session() {
 
                 <TouchableOpacity
                   style={styles.dateTimePicker}
-                  onPress={() => setShowStartTimePicker(true)}
+                  onPress={() => {Keyboard.dismiss(), setShowStartTimePicker(true)}}
                 >
                   <Text style={styles.dateTimeLabel}>Start Time:</Text>
                   <Text style={styles.dateTimeValue}>
@@ -242,6 +243,7 @@ export default function Session() {
                   display="default"
                   onChange={onChangeDate}
                   minimumDate={new Date()}
+                  
                   maximumDate={
                     new Date(new Date().setMonth(new Date().getMonth() + 3))
                   }

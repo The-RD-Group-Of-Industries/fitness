@@ -95,6 +95,7 @@ export default function ChatsScreen() {
   return (
     <ThemedView>
       <Stack.Screen options={{ title: "Chats", 
+      headerBackButtonDisplayMode: "minimal",
       headerStyle: {
         backgroundColor: "#090E26",
       }, headerTintColor: "#fff", headerTitleStyle: {
