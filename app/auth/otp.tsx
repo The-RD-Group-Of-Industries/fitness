@@ -10,7 +10,7 @@ export default function OTPSCREEN() {
   const { register } = useAuth()
   const {email, registerd, password, name} = useLocalSearchParams<{email: string, registerd: string, name: string, password: string}>()
   const [Value, setNumber] = useState(0)
-  const [generated, setGenerated] = useState<u | number>(0)
+  const [generated, setGenerated] = useState<number>(0)
   const [loading, setLoading] = useState(false)
 
   async function GenOtp() {

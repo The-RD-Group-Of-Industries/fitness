@@ -6,34 +6,16 @@ import {
   ScrollView,
   Alert,
   Platform,
-  SafeAreaView,
-  StatusBar,
-  useColorScheme,
+  KeyboardAvoidingView,
   Keyboard,
 } from "react-native";
-import type React from "react";
-import { useEffect, useState } from "react";
-import { Stack } from "expo-router";
-import CustomDropdown from "@/components/ui/DropDown";
+import React, { useState } from "react";
+import { Stack, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import DateTimePicker, {
-  type DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
 import { ThemedView } from "@/components/ThemedView";
-
-interface Trainer {
-  id: string;
-  name: string | null;
-  email: string;
-}
-
-interface DropdownItem {
-  label: string;
-  value: string;
-}
 
 const DisplayBox = ({
   title,
@@ -58,38 +40,22 @@ export default function Session() {
       charge: 799,
       value: "personal",
     },
-    // {
-    //   title: "Group Training",
-    //   subTitle: "Up to 5 people",
-    //   charge: 199,
-    //   value: "group",
-    // },
   ];
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [trainers, setTrainers] = useState<DropdownItem[]>([]);
-  const [selectedTrainer, setSelectedTrainer] = useState("");
   const [date, setDate] = useState(new Date());
   const [startTime, setStartTime] = useState(new Date());
-  const [endTime, setEndTime] = useState(
-    new Date(new Date().getTime() + 1 * 60 * 60 * 1000)
-  );
+  const [endTime, setEndTime] = useState(new Date(new Date().getTime() + 60 * 60 * 1000));
   const [sessionType, setSessionType] = useState(sessionTypes[0].value);
   const [loading, setLoading] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
-  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+
   const router = useRouter();
 
-  const colorScheme = useColorScheme();
-
   const handleSubmit = async () => {
-    if (!sessionType) {
-      Alert.alert("Error", "Please select a session type");
-      return;
-    }
-
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem("userToken");
@@ -101,7 +67,6 @@ export default function Session() {
           endTime: endTime.toISOString(),
           scheduleSubject: "Training Session",
           sessionType,
-          // trainerId: selectedTrainer,
         },
         {
           headers: {
@@ -110,10 +75,7 @@ export default function Session() {
         }
       );
       Alert.alert("Success", "Session scheduled successfully!", [
-        {
-          text: "OK",
-          onPress: () => router.push("/(tabs)"),
-        },
+        { text: "OK", onPress: () => router.push("/(tabs)") },
       ]);
     } catch (error) {
       console.error("Error scheduling session:", error);
@@ -127,203 +89,179 @@ export default function Session() {
     if (selectedDate) {
       if (selectedDate < today) {
         Alert.alert("Invalid Date", "You cannot select a past date.");
-        setShowDatePicker(false);
       } else {
-        const currentDate = selectedDate;
-        setShowDatePicker(Platform.OS === "ios");
-        const newDate = new Date(date);
-        newDate.setHours(startTime.getHours(), startTime.getMinutes());
-        setDate(currentDate);
-        setStartTime(currentDate);
-        setEndTime(new Date(currentDate.getTime() + 1 * 60 * 60 * 1000));
+        setDate(selectedDate);
+        const newStart = new Date(selectedDate);
+        newStart.setHours(startTime.getHours(), startTime.getMinutes());
+        setStartTime(newStart);
+        setEndTime(new Date(newStart.getTime() + 60 * 60 * 1000));
       }
     }
+    setShowDatePicker(Platform.OS === "ios");
   };
 
-  const onChangeStartTime = (event: any, selectedTime: any) => {
-    setShowStartTimePicker(false);
-
+  const onChangeStartTime = (event: DateTimePickerEvent, selectedTime?: Date) => {
     if (selectedTime) {
       const currentTime = new Date();
       if (selectedTime < currentTime) {
         setStartTime(currentTime);
-        setEndTime(new Date(currentTime.getTime() + 1 * 60 * 60 * 1000));
-        alert("You cannot select a time in the past");
+        setEndTime(new Date(currentTime.getTime() + 60 * 60 * 1000));
+        Alert.alert("Invalid Time", "You cannot select a time in the past");
       } else {
         setStartTime(selectedTime);
-        setEndTime(new Date(selectedTime.getTime() + 1 * 60 * 60 * 1000));
+        setEndTime(new Date(selectedTime.getTime() + 60 * 60 * 1000));
       }
     }
+    setShowStartTimePicker(Platform.OS === "ios");
   };
 
-  const formatDate = (date: any) => {
+  const formatDate = (date: Date) => {
     const month = date.getMonth() + 1;
     const day = date.getDate();
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
 
-  const formatTime = (time: any) => {
+  const formatTime = (time: Date) => {
     let hours = time.getHours();
     let minutes = time.getMinutes();
     const ampm = hours >= 12 ? "PM" : "AM";
 
     hours = hours % 12;
     hours = hours ? hours : 12;
-    minutes = minutes < 10 ? "0" + minutes : minutes;
+    minutes = minutes < 10 ? 0 + minutes : minutes;
 
     return `${hours}:${minutes} ${ampm}`;
   };
 
   return (
-    // <SafeAreaView style={{ flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, }}>
-    <ThemedView>
+    <ThemedView style={{ flex: 1 }}>
       <Stack.Screen
         options={{
           headerTitle: "Book a session",
           headerBackButtonDisplayMode: "minimal",
-          headerStyle: {
-            backgroundColor: "#090E26",
-          },
+          headerStyle: { backgroundColor: "#090E26" },
           headerTintColor: "#fff",
         }}
       />
 
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.contentContainer}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
       >
-        <View style={styles.container}>
-          <View style={styles.child}>
-            <Text style={styles.heading}>Book Training Session</Text>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.contentContainer}
+        >
+          <View style={styles.container}>
+            <View style={styles.child}>
+              <Text style={styles.heading}>Book Training Session</Text>
 
-            <DisplayBox title="Schedule">
-              <View style={styles.dateTimeContainer}>
-                <TouchableOpacity
-                  style={styles.dateTimePicker}
-                  onPress={() => {Keyboard.dismiss(), setShowDatePicker(true)}}
-                >
-                  <Text style={styles.dateTimeLabel}>Date:</Text>
-                  <Text style={styles.dateTimeValue}>{formatDate(date)}</Text>
-                </TouchableOpacity>
+              <DisplayBox title="Schedule">
+                <View style={styles.dateTimeContainer}>
+                  <TouchableOpacity
+                    style={styles.dateTimePicker}
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      setTimeout(() => setShowDatePicker(true), 100);
+                    }}
+                  >
+                    <Text style={styles.dateTimeLabel}>Date:</Text>
+                    <Text style={styles.dateTimeValue}>{formatDate(date)}</Text>
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={styles.dateTimePicker}
-                  onPress={() => {Keyboard.dismiss(), setShowStartTimePicker(true)}}
-                >
-                  <Text style={styles.dateTimeLabel}>Start Time:</Text>
-                  <Text style={styles.dateTimeValue}>
-                    {formatTime(startTime)}
-                  </Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.dateTimePicker}
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      setTimeout(() => setShowStartTimePicker(true), 100);
+                    }}
+                  >
+                    <Text style={styles.dateTimeLabel}>Start Time:</Text>
+                    <Text style={styles.dateTimeValue}>{formatTime(startTime)}</Text>
+                  </TouchableOpacity>
 
-                <View style={styles.dateTimePicker}>
-                  <Text style={styles.dateTimeLabel}>End Time:</Text>
-                  <Text style={styles.dateTimeValue}>
-                    {formatTime(endTime)} {"(+60min)"}
-                  </Text>
+                  <View style={styles.dateTimePicker}>
+                    <Text style={styles.dateTimeLabel}>End Time:</Text>
+                    <Text style={styles.dateTimeValue}>{formatTime(endTime)} (+60min)</Text>
+                  </View>
                 </View>
-              </View>
-            </DisplayBox>
+              </DisplayBox>
 
-            {showDatePicker && (
-              <View
-                style={{
-                  backgroundColor:
-                    Platform.OS === "ios" ? "#fff" : "transparent", // Light background for iOS
-                  borderRadius: 10, padding: 4
-                }}
-              >
-                <DateTimePicker
-                  testID="datePicker"
-                  value={date}
-                  mode="date"
-                  is24Hour={true}
-                  display="default"
-                  onChange={onChangeDate}
-                  minimumDate={new Date()}
-                  
-                  maximumDate={
-                    new Date(new Date().setMonth(new Date().getMonth() + 3))
-                  }
-                  themeVariant={"light"}
-                  {...(Platform.OS === "ios" && { textColor: "#000" })}
-                />
-              </View>
-            )}
-            {showStartTimePicker && (
-              <View
-                style={{
-                  backgroundColor:
-                    Platform.OS === "ios" ? "#fff" : "transparent",
-                  borderRadius: 10, padding: 4
-                }}
-              >
-                <DateTimePicker
-                  testID="startTimePicker"
-                  value={startTime}
-                  mode="time"
-                  is24Hour={false}
-                  display="spinner"
-                  onChange={onChangeStartTime}
-                  minimumDate={today}
-                  themeVariant={"light"}
-                  // textColor="red"
-                  {...(Platform.OS === "ios" && { textColor: "#000" })}
-                />
-              </View>
-            )}
+              {showDatePicker && (
+                <View style={styles.pickerContainer}>
+                  <DateTimePicker
+                    value={date}
+                    mode="date"
+                    is24Hour={true}
+                    display={Platform.OS === "ios" ? "spinner" : "default"}
+                    onChange={onChangeDate}
+                    minimumDate={new Date()}
+                    maximumDate={new Date(new Date().setMonth(new Date().getMonth() + 3))}
+                    themeVariant={"light"}
+                    {...(Platform.OS === "ios" && { textColor: "#000" })}
+                  />
+                </View>
+              )}
 
-            <DisplayBox title="Session Type" long>
-              {sessionTypes.map((type, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.longBox,
-                    sessionType === type.value && styles.selectedBox,
-                  ]}
-                  onPress={() => setSessionType(type.value)}
-                >
-                  {/* <Text style={styles.charge}>₹{type.charge}/hr</Text> */}
-                  <Text style={styles.text}>{type.title}</Text>
-                  <Text style={styles.subTxt}>{type.subTitle}</Text>
+              {showStartTimePicker && (
+                <View style={styles.pickerContainer}>
+                  <DateTimePicker
+                    value={startTime}
+                    mode="time"
+                    is24Hour={false}
+                    display={Platform.OS === "ios" ? "spinner" : "default"}
+                    onChange={onChangeStartTime}
+                    themeVariant={"light"}
+                    {...(Platform.OS === "ios" && { textColor: "#000" })}
+                  />
+                </View>
+              )}
+
+              <DisplayBox title="Session Type" long>
+                {sessionTypes.map((type, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.longBox,
+                      sessionType === type.value && styles.selectedBox,
+                    ]}
+                    onPress={() => setSessionType(type.value)}
+                  >
+                    <Text style={styles.text}>{type.title}</Text>
+                    <Text style={styles.subTxt}>{type.subTitle}</Text>
+                  </TouchableOpacity>
+                ))}
+              </DisplayBox>
+
+              <LinearGradient
+                colors={["#08027a", "#382eff"]}
+                start={{ x: 1, y: 0.9 }}
+                end={{ x: 0.3, y: 0.8 }}
+                style={styles.button}
+              >
+                <TouchableOpacity onPress={handleSubmit} disabled={loading}>
+                  <Text style={styles.btnText}>
+                    {loading ? "Scheduling..." : "Schedule Session"}
+                  </Text>
                 </TouchableOpacity>
-              ))}
-            </DisplayBox>
-
-            {/* <CustomDropdown data={trainers} onSelect={(value: string) => setSelectedTrainer(value)} /> */}
-
-            <LinearGradient
-              colors={["#08027a", "#382eff"]}
-              start={{ x: 1, y: 0.9 }}
-              end={{ x: 0.3, y: 0.8 }}
-              style={styles.button}
-            >
-              <TouchableOpacity onPress={handleSubmit} disabled={loading}>
-                <Text style={styles.btnText}>
-                  {loading ? "Scheduling..." : "Schedule Session"}
-                </Text>
-              </TouchableOpacity>
-            </LinearGradient>
+              </LinearGradient>
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </ThemedView>
-    // </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   contentContainer: {
-    height: "100%",
     paddingBottom: 100,
   },
   container: {
     justifyContent: "center",
     alignItems: "flex-start",
-    height: "auto",
-    position: "relative",
   },
   child: {
     paddingHorizontal: 10,
@@ -336,9 +274,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   box: {
-    width: "auto",
     padding: 14,
-    height: "auto",
     borderWidth: 1,
     borderColor: "#3082fc",
     borderRadius: 10,
@@ -358,28 +294,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   longBox: {
-    width: "auto",
-    height: "auto",
     padding: 16,
     paddingVertical: 20,
     borderWidth: 1,
     borderColor: "#3082fc",
     marginTop: 10,
     borderRadius: 8,
-    position: "relative",
   },
   selectedBox: {
     backgroundColor: "#3082fc30",
     borderColor: "#3082fc",
     borderWidth: 2,
-  },
-  charge: {
-    color: "#1277fc",
-    fontSize: 16,
-    fontWeight: "400",
-    position: "absolute",
-    right: 8,
-    top: 10,
   },
   subTxt: {
     color: "gray",
@@ -388,7 +313,6 @@ const styles = StyleSheet.create({
   button: {
     width: "100%",
     paddingVertical: 15,
-    paddingHorizontal: 10,
     textAlign: "center",
     borderRadius: 8,
     marginTop: 20,
@@ -420,5 +344,10 @@ const styles = StyleSheet.create({
   dateTimeValue: {
     color: "white",
     fontSize: 16,
+  },
+  pickerContainer: {
+    backgroundColor: Platform.OS === "ios" ? "#fff" : "transparent",
+    borderRadius: 10,
+    padding: 4,
   },
 });
