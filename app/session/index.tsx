@@ -10,6 +10,7 @@ import {
   StatusBar,
   useColorScheme,
   Keyboard,
+  TextInput,
 } from "react-native";
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -23,6 +24,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { ThemedView } from "@/components/ThemedView";
+import TimeSelector from "@/components/TimeSelectorIOS";
 
 interface Trainer {
   id: string;
@@ -185,8 +187,110 @@ export default function Session() {
     return `${hours}:${minutes} ${ampm}`;
   };
 
+  const now = new Date();
+  const initialHour = String(now.getHours() % 12 || 12).padStart(2, "0"); // 12-hour format
+  const initialMinute = String(now.getMinutes()).padStart(2, "0");
+  const initialAmPm = now.getHours() >= 12 ? "PM" : "AM";
+
+  const [hour, setHour] = useState(initialHour);
+  const [minute, setMinute] = useState(initialMinute);
+  const [ampm, setAmPm] = useState(initialAmPm);
+
+  const handleTimeSelect = () => {
+    const now = new Date();
+
+    // Convert hour/minute to 24-hour format
+    let hour24 = parseInt(hour, 10);
+    if (ampm === "PM" && hour24 !== 12) hour24 += 12;
+    if (ampm === "AM" && hour24 === 12) hour24 = 0;
+
+    // Set time to today's date
+    now.setHours(hour24);
+    now.setMinutes(parseInt(minute, 10));
+    now.setSeconds(0);
+    now.setMilliseconds(0);
+
+    // Convert to UTC ISO format
+    const isoString = now.toISOString();
+
+    const currentTime = new Date();
+    const selectedTime = new Date(isoString);
+    console.log(selectedTime);
+
+    if (selectedTime < currentTime) {
+      setStartTime(currentTime);
+      setEndTime(new Date(currentTime.getTime() + 1 * 60 * 60 * 1000));
+      alert("You cannot select a time in the past");
+    } else {
+      setStartTime(selectedTime);
+      setEndTime(new Date(selectedTime.getTime() + 1 * 60 * 60 * 1000));
+    }
+    setShowStartTimePicker(false)
+  };
+
   return (
     <ThemedView>
+      {
+        showStartTimePicker && Platform.OS === "ios" && (
+                <View
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "auto",
+          backgroundColor: "#00000095",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 100,
+        }}
+      >
+        <View
+          style={{
+            width: "80%",
+            height: "25%",
+            backgroundColor: "white",
+            borderRadius: 10,
+            marginBottom: 100,
+            padding: 10,
+            paddingVertical: 14,
+          }}
+        >
+          <Text style={{ fontSize: 18, fontWeight: 600 }}>Select Start Time</Text>
+          <TimeSelector
+            ampm={ampm}
+            hour={hour}
+            minute={minute}
+            setAmPm={setAmPm}
+            setHour={setHour}
+            setMinute={setMinute}
+          />
+          <TouchableOpacity
+            onPress={handleTimeSelect}
+            style={{
+              width: 70,
+              // paddingHorizontal: 10,
+              paddingVertical: 6,
+              backgroundColor: "#140099",
+              borderRadius: 6,
+            }}
+          >
+            <Text
+              style={{
+                color: "white",
+                textAlign: "center",
+                fontWeight: 800,
+                fontSize: 14,
+                paddingBottom: 2,
+              }}
+            >
+              Done
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+        )
+      }
       <Stack.Screen
         options={{
           headerTitle: "Book a session",
@@ -242,8 +346,8 @@ export default function Session() {
                 style={{
                   backgroundColor:
                     Platform.OS === "ios" ? "#fff" : "transparent", // Light background for iOS
-                  borderRadius: 10, 
-                  padding: 4
+                  borderRadius: 10,
+                  padding: 4,
                 }}
               >
                 <DateTimePicker
@@ -262,15 +366,16 @@ export default function Session() {
                 />
               </View>
             )}
-            {showStartTimePicker && (
+            {showStartTimePicker && Platform.OS === "android" && (
               <View
                 style={{
-                  backgroundColor:
-                    Platform.OS === "ios" ? "#fff" : "transparent",
-                  borderRadius: 10, 
-                  padding: 4
+                  backgroundColor: "transparent",
+                  borderRadius: 10,
+                  padding: 4,
+                  position: "relative",
                 }}
               >
+
                 <DateTimePicker
                   testID="startTimePicker"
                   value={startTime}
@@ -280,8 +385,6 @@ export default function Session() {
                   onChange={onChangeStartTime}
                   minimumDate={today}
                   themeVariant={"light"}
-                  // textColor="red"
-                  {...(Platform.OS === "ios" && { textColor: "#000" })}
                 />
               </View>
             )}
