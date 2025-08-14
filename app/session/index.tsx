@@ -196,9 +196,10 @@ export default function Session() {
   const [minute, setMinute] = useState(initialMinute);
   const [ampm, setAmPm] = useState(initialAmPm);
 
+
   const handleTimeSelect = () => {
     const now = new Date();
-
+    
     // Convert hour/minute to 24-hour format
     let hour24 = parseInt(hour, 10);
     if (ampm === "PM" && hour24 !== 12) hour24 += 12;
@@ -215,9 +216,8 @@ export default function Session() {
 
     const currentTime = new Date();
     const selectedTime = new Date(isoString);
-    console.log(selectedTime);
 
-    if (selectedTime < currentTime) {
+    if (selectedTime < currentTime && date <= currentTime) {
       setStartTime(currentTime);
       setEndTime(new Date(currentTime.getTime() + 1 * 60 * 60 * 1000));
       alert("You cannot select a time in the past");
@@ -248,7 +248,7 @@ export default function Session() {
         <View
           style={{
             width: "80%",
-            height: "25%",
+            height: "30%",
             backgroundColor: "white",
             borderRadius: 10,
             marginBottom: 100,
@@ -381,10 +381,10 @@ export default function Session() {
                   value={startTime}
                   mode="time"
                   is24Hour={false}
-                  display="spinner"
+                  display="clock"
                   onChange={onChangeStartTime}
                   minimumDate={today}
-                  themeVariant={"light"}
+                  // themeVariant={"light"}
                 />
               </View>
             )}
