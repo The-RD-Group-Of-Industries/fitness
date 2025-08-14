@@ -248,24 +248,22 @@ export default function Session() {
         <View
           style={{
             width: "80%",
-            height: "30%",
+            height: "38%",
             backgroundColor: "white",
             borderRadius: 10,
             marginBottom: 100,
             padding: 10,
             paddingVertical: 14,
           }}
-        >
+        >+
+          <View
+          style={{
+            justifyContent: 'space-between',
+            flexDirection: 'row'
+          }}
+          >
           <Text style={{ fontSize: 18, fontWeight: 600 }}>Select Start Time</Text>
-          <TimeSelector
-            ampm={ampm}
-            hour={hour}
-            minute={minute}
-            setAmPm={setAmPm}
-            setHour={setHour}
-            setMinute={setMinute}
-          />
-          <TouchableOpacity
+                    <TouchableOpacity
             onPress={handleTimeSelect}
             style={{
               width: 70,
@@ -287,6 +285,16 @@ export default function Session() {
               Done
             </Text>
           </TouchableOpacity>
+          </View>
+          <TimeSelector
+            ampm={ampm}
+            hour={hour}
+            minute={minute}
+            setAmPm={setAmPm}
+            setHour={setHour}
+            setMinute={setMinute}
+          />
+
         </View>
       </View>
         )
