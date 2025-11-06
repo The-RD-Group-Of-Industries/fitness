@@ -28,7 +28,7 @@ export default function Trainer() {
       setError(null)
     
       
-      const response = await axios.get("https://fitness-admin-tau.vercel.app/api/mobile/users/trainer", {
+      const response = await axios.get("http://localhost:3000", {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
@@ -216,4 +216,4 @@ const style = StyleSheet.create({
     textAlign: "center",
     marginBottom: 10,
   },
-});
+})

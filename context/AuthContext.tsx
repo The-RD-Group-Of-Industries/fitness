@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (name: string, email: string, password: string) => {
     try {
-      const response = await axios.post("https://fitness-admin-tau.vercel.app/api/mobile/auth/register", {
+      const response = await axios.post("", {
         name,
         email,
         password,

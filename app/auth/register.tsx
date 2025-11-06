@@ -4,6 +4,9 @@ import { Stack, useRouter } from "expo-router"
 import { Feather, FontAwesome6 } from "@expo/vector-icons"
 import { useAuth } from "@/context/AuthContext"
 import axios from "axios"
+import { registerUser } from "@/lib/api"
+
+
 
 export default function RegisterScreen() {
   const router = useRouter()
@@ -18,20 +21,18 @@ export default function RegisterScreen() {
     try {
       setLoading(true)
 
-  const verify = await axios.post("https://fitness-admin-tau.vercel.app/api/mobile/auth/verify", {
-    email: email
-  })
+        const response = await registerUser({
+        fullName: name,
+        email: email,
+        password: password,
+      });
 
-      if (verify.status === 200) {
-        if (verify.data.user) {
-          return alert("Email already exists.")
-        }
-        else {
-          router.push({
-            pathname: "/auth/otp",
-            params: { registerd: "true", name: name, password: password, email: email }
-          })
-        }
+      if (response.status === 201) {
+         alert("user created Succesfully")
+                // 1. Store the token (using your AuthContext or SecureStore)
+        // await onLogin(response.data.token, response.data.user);
+        router.replace('/(tabs)'); 
+          
       }
 } 
     catch (error) {

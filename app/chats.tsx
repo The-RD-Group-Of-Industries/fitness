@@ -44,7 +44,7 @@ export default function ChatsScreen() {
     try {
       const token = await AsyncStorage.getItem("userToken");
       const response = await axios.get(
-        "https://fitness-admin-tau.vercel.app/api/mobile/users/usrTrainr", 
+        "http://localhost:3000", 
         {
           headers: { Authorization: `Bearer ${token}` },
         }
