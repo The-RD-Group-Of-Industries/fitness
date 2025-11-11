@@ -27,6 +27,7 @@ export default function TimeSelector({
           selectedValue={hour}
           style={styles.picker}
           onValueChange={(itemValue) => setHour(itemValue)}
+          itemStyle={{ color: '#000', fontSize: 22 }}
         >
           {hours.map((h) => (
             <Picker.Item key={h} label={h} value={h} />
@@ -38,6 +39,7 @@ export default function TimeSelector({
           selectedValue={minute}
           style={styles.picker}
           onValueChange={(itemValue) => setMinute(itemValue)}
+          itemStyle={{ color: '#000', fontSize: 22 }}
         >
           {minutes.map((m) => (
             <Picker.Item key={m} label={m} value={m} />
@@ -49,6 +51,7 @@ export default function TimeSelector({
           selectedValue={ampm}
           style={styles.picker}
           onValueChange={(itemValue) => setAmPm(itemValue)}
+          itemStyle={{ color: '#000', fontSize: 22 }}
         >
           {ampmOptions.map((ap) => (
             <Picker.Item key={ap} label={ap} value={ap} />

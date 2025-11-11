@@ -25,6 +25,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { ThemedView } from "@/components/ThemedView";
 import TimeSelector from "@/components/TimeSelectorIOS";
+import { createSchedule } from "@/lib/api";
 
 interface Trainer {
   id: string;
@@ -97,35 +98,23 @@ export default function Session() {
   };
 
   const handleSubmit = async () => {
-    if (!sessionType) {
-      Alert.alert("Error", "Please select a session type");
-      return;
-    }
-
+    // ...your checks
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem("userToken");
-      await axios.post(
-        "https://fitness-admin-tau.vercel.app/api/mobile/schedule/create",
+
+      await createSchedule(
         {
+          // your schedule payload goes here:
           date: date.toISOString(),
           startTime: startTime.toISOString(),
           endTime: endTime.toISOString(),
           scheduleSubject: "Training Session",
           sessionType,
-          // trainerId: selectedTrainer,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         }
       );
       Alert.alert("Success", "Session scheduled successfully!", [
-        {
-          text: "OK",
-          onPress: () => router.push("/(tabs)"),
-        },
+        { text: "OK", onPress: () => router.push("/(tabs)") }
       ]);
     } catch (error) {
       console.error("Error scheduling session:", error);
@@ -134,6 +123,7 @@ export default function Session() {
       setLoading(false);
     }
   };
+
 
   const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
     if (selectedDate) {
@@ -249,17 +239,22 @@ export default function Session() {
           style={{
             width: "80%",
             height: "38%",
-            backgroundColor: "white",
+            backgroundColor: "rgba(255,255,255,1)",
             borderRadius: 10,
             marginBottom: 100,
             padding: 10,
             paddingVertical: 14,
+            justifyContent: "center",
+            alignItems: "center",  
+            display: "flex",
+            flexDirection:"column"
           }}
-        >+
+        >
           <View
           style={{
             justifyContent: 'space-between',
-            flexDirection: 'row'
+            flexDirection: 'row',
+            width:'100%',
           }}
           >
           <Text style={{ fontSize: 18, fontWeight: 600 }}>Select Start Time</Text>
