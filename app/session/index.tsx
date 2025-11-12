@@ -61,12 +61,12 @@ export default function Session() {
       charge: 799,
       value: "personal",
     },
-    // {
-    //   title: "Group Training",
-    //   subTitle: "Up to 5 people",
-    //   charge: 199,
-    //   value: "group",
-    // },
+    {
+      title: "Group Training",
+      subTitle: "Up to 5 people",
+      charge: 199,
+      value: "group",
+    },
   ];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -93,9 +93,13 @@ export default function Session() {
   };
 
   const handleStartTimePickerOpen = () => {
-    Keyboard.dismiss();
-    setTimeout(() => setShowStartTimePicker(true), 100);
-  };
+  Keyboard.dismiss();
+  setTimeout(() => {
+    setShowStartTimePicker(true);
+    console.log("showStartTimePicker set to true"); // Add this debug line
+  }, 100);
+};
+
 
   const handleSubmit = async () => {
     // ...your checks
@@ -236,61 +240,57 @@ export default function Session() {
         }}
       >
         <View
-          style={{
-            width: "80%",
-            height: "38%",
-            backgroundColor: "rgba(255,255,255,1)",
-            borderRadius: 10,
-            marginBottom: 100,
-            padding: 10,
-            paddingVertical: 14,
-            justifyContent: "center",
-            alignItems: "center",  
-            display: "flex",
-            flexDirection:"column"
-          }}
-        >
-          <View
-          style={{
-            justifyContent: 'space-between',
-            flexDirection: 'row',
-            width:'100%',
-          }}
-          >
-          <Text style={{ fontSize: 18, fontWeight: 600 }}>Select Start Time</Text>
-                    <TouchableOpacity
-            onPress={handleTimeSelect}
-            style={{
-              width: 70,
-              // paddingHorizontal: 10,
-              paddingVertical: 6,
-              backgroundColor: "#140099",
-              borderRadius: 6,
-            }}
-          >
-            <Text
-              style={{
-                color: "white",
-                textAlign: "center",
-                fontWeight: 800,
-                fontSize: 14,
-                paddingBottom: 2,
-              }}
-            >
-              Done
-            </Text>
-          </TouchableOpacity>
-          </View>
-          <TimeSelector
-            ampm={ampm}
-            hour={hour}
-            minute={minute}
-            setAmPm={setAmPm}
-            setHour={setHour}
-            setMinute={setMinute}
-          />
-
-        </View>
+  style={{
+    width: "80%",
+    height: 320, // Use a fixed value, not percentage
+    backgroundColor: "rgba(255,255,255,0.96)",
+    borderRadius: 10,
+    marginBottom: 40,
+    padding: 10,
+    paddingTop: 18,
+    flexDirection: "column",
+    justifyContent: "space-between",
+    alignItems: "center",
+  }}
+>
+  <View
+    style={{
+      justifyContent: 'space-between',
+      flexDirection: 'row',
+      width: '100%',
+      marginBottom: 16,
+    }}
+  >
+    <Text style={{ fontSize: 18, fontWeight: '600', color: '#222' }}>Select Start Time</Text>
+    <TouchableOpacity
+      onPress={handleTimeSelect}
+      style={{
+        width: 70,
+        paddingVertical: 6,
+        backgroundColor: "#140099",
+        borderRadius: 6,
+        alignItems: "center",
+      }}
+    >
+      <Text style={{
+        color: "white",
+        fontWeight: "800",
+        fontSize: 14,
+        paddingBottom: 2,
+      }}>
+        Done
+      </Text>
+    </TouchableOpacity>
+  </View>
+  <TimeSelector
+    ampm={ampm}
+    hour={hour}
+    minute={minute}
+    setAmPm={setAmPm}
+    setHour={setHour}
+    setMinute={setMinute}
+  />
+</View>
       </View>
         )
       }
