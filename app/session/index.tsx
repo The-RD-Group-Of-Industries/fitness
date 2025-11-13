@@ -11,6 +11,7 @@ import {
   useColorScheme,
   Keyboard,
   TextInput,
+  ActivityIndicator 
 } from "react-native";
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -26,6 +27,15 @@ import { useRouter } from "expo-router";
 import { ThemedView } from "@/components/ThemedView";
 import TimeSelector from "@/components/TimeSelectorIOS";
 import { createSchedule } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
+import * as SecureStore from 'expo-secure-store';
+
+
+interface JwtPayload {
+  userId: string;  // or use the key you stored the user ID under, e.g., "id" or "sub"
+  // add other fields if needed
+}
+
 
 interface Trainer {
   id: string;
@@ -83,8 +93,19 @@ export default function Session() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const router = useRouter();
-
+  const {user}= useAuth();
   const colorScheme = useColorScheme();
+
+  console.log("user in session index",user);
+  
+
+    if (!user) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#ffffff" />
+      </View>
+    );
+  }
 
   // Keyboard dismiss handlers
   const handleDatePickerOpen = () => {
@@ -99,24 +120,33 @@ export default function Session() {
     console.log("showStartTimePicker set to true"); // Add this debug line
   }, 100);
 };
+const scheduleLink = "helloLink";
+const scheduleDescription = "helloDescriptiton";
+const scheduleImg = "helloImg";
+const affectedArea ="Area";
+const userId=user._id
+const trainerId ='691313d10c0dc1d3e60c8ba0'
+
 
 
   const handleSubmit = async () => {
     // ...your checks
     try {
       setLoading(true);
-      const token = await AsyncStorage.getItem("userToken");
+      const token = await SecureStore.getItemAsync("token");
+      await createSchedule({
+  date: date.toISOString(),           // Date object converted to ISO string
+  startTime: startTime.toISOString(), // Date object converted to ISO string
+  endTime: endTime.toISOString(),     // Date object converted to ISO string
+  scheduleLink: scheduleLink || "",   // Optional, provide a string or empty string
+  scheduleSubject: "Training Session",// Example subject, must be non-empty string
+  scheduleDescription: scheduleDescription || "", // Optional description
+  scheduleImg: scheduleImg || "",     // Optional image URL or base64 string
+  affectedArea: affectedArea || "",   // Optional affected area
+  userId: userId,                     // Must be a valid user ObjectId string
+  trainerId: trainerId                // Must be a valid trainer ObjectId string
+});
 
-      await createSchedule(
-        {
-          // your schedule payload goes here:
-          date: date.toISOString(),
-          startTime: startTime.toISOString(),
-          endTime: endTime.toISOString(),
-          scheduleSubject: "Training Session",
-          sessionType,
-        }
-      );
       Alert.alert("Success", "Session scheduled successfully!", [
         { text: "OK", onPress: () => router.push("/(tabs)") }
       ]);
@@ -347,8 +377,7 @@ export default function Session() {
             {showDatePicker && (
               <View
                 style={{
-                  backgroundColor:
-                    Platform.OS === "ios" ? "#fff" : "transparent", // Light background for iOS
+                  backgroundColor:"transparent",
                   borderRadius: 10,
                   padding: 4,
                 }}
@@ -365,7 +394,7 @@ export default function Session() {
                     new Date(new Date().setMonth(new Date().getMonth() + 3))
                   }
                   themeVariant={"light"}
-                  {...(Platform.OS === "ios" && { textColor: "#000" })}
+                  {...(Platform.OS === "ios" && { textColor: "white" })}
                 />
               </View>
             )}

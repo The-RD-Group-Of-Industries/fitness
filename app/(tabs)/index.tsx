@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Trainer from '@/components/main/Trainer';
 import Upcoming from '@/components/main/Upcoming';
 import { ThemedView } from '@/components/ThemedView';
@@ -6,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { StyleSheet, ScrollView, View, Text, TouchableOpacity, Dimensions, PixelRatio } from 'react-native';
 import * as Device from 'expo-device';
+import { useEffect } from 'react';
 
 
 
@@ -35,6 +37,16 @@ export default function HomeScreen() {
       onClick: () => router.push("/session")
     },
   ];
+
+// checking token availability
+// const checkToken = async () => {
+//   const token = await AsyncStorage.getItem('token');
+//   console.log('Stored token in memory:', token);
+// };
+
+// useEffect(() => {
+//   checkToken();
+// }, []);
 
   return (
     <ThemedView style={{paddingTop: -35}}>

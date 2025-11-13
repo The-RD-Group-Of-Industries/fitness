@@ -11,17 +11,22 @@ import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as WebBrowser from "expo-web-browser";
+import * as SecureStore from 'expo-secure-store';
+import { getUpcomingSchedules } from "@/lib/api"; 
+
+
 
 interface Schedule {
-  id: string;
+  _id: string;
   date: string;
   startTime: string;
   scheduleLink: string;
   scheduleSubject: string;
   status: string;
   trainer: {
+    _id: string;
     name: string;
-  };
+  }|null;
 }
 
 export default function Upcoming() {
@@ -34,14 +39,8 @@ export default function Upcoming() {
 
   const fetchUpcomingSchedules = async () => {
     try {
-      const token = await AsyncStorage.getItem("userToken");
-      const response = await axios.get(
-        "https://fitness-admin-tau.vercel.app/api/mobile/schedule/upcoming",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      console.log(response.data.schedules);
+      const response = await getUpcomingSchedules();
+      console.log("upcoming session in upload.tsx",response.data.schedules);
       setSchedules(response.data.schedules);
     } catch (error) {
       console.error("Error fetching upcoming schedules:", error);
@@ -145,7 +144,7 @@ const handlePress = async (url: string) => {
 
       {schedules.length > 0 ? (
         schedules.map((schedule) => (
-          <View style={css.box} key={schedule.id}>
+          <View style={css.box} key={schedule._id}>
             <Text style={css.text}>
               {/* {formatDate(schedule.date.split("T")[0])}{", "} */}
               {formatDateAndTime(schedule.startTime)}
@@ -153,7 +152,7 @@ const handlePress = async (url: string) => {
             </Text>
             <Text style={css.title}>{schedule.scheduleSubject}</Text>
             {schedule.status !== "requested" && (
-              <Text style={css.trainerName}>With {schedule.trainer.name}</Text>
+              <Text style={css.trainerName}>With {schedule.trainer?.name}</Text>
             )}
             <Text style={css.status}>Status - {schedule.status.toUpperCase()}</Text>
             {schedule.status === "requested" && (

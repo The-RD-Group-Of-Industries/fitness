@@ -48,7 +48,7 @@ export default function TabLayout() {
           headerTitleStyle: {
             fontWeight: "800",
             fontSize: 26,
-            color: 'white'
+            color: 'white',
           },
           tabBarStyle: {
             backgroundColor: '#090E21'

@@ -28,7 +28,7 @@ export default function ChatsScreen() {
 
   const fetchAdmins = async () => {
     try {
-      const token = await AsyncStorage.getItem("userToken")
+      const token = await AsyncStorage.getItem("token ")
       const response = await axios.get("https://fitness-admin-tau.vercel.app/api/mobile/users/admin", {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -42,7 +42,7 @@ export default function ChatsScreen() {
 
   const fetchTrainers = async (): Promise<void> => {
     try {
-      const token = await AsyncStorage.getItem("userToken");
+      const token = await AsyncStorage.getItem("token ");
       const response = await axios.get(
         "http://localhost:3000", 
         {

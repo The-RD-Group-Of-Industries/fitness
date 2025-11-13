@@ -72,7 +72,7 @@ export default function ChatScreen() {
 
   const getUserId = async () => {
     try {
-      const token = await AsyncStorage.getItem("userToken");
+      const token = await AsyncStorage.getItem("token ");
       const response = await axios.get("https://fitness-admin-tau.vercel.app/api/mobile/user", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -84,7 +84,7 @@ export default function ChatScreen() {
 
   const initializeChat = async () => {
     try {
-      const token = await AsyncStorage.getItem("userToken");
+      const token = await AsyncStorage.getItem("token ");
       const response = await axios.post(
         "https://fitness-admin-tau.vercel.app/api/mobile/chat/create",
         { trainerId },
@@ -113,7 +113,7 @@ export default function ChatScreen() {
 
   const fetchMessages = async (id?: string) => {
     try {
-      const token = await AsyncStorage.getItem("userToken");
+      const token = await AsyncStorage.getItem("token ");
       const response = await axios.get(
         `https://fitness-admin-tau.vercel.app/api/mobile/chat/${id || chatId}/messages`,
         {
@@ -130,7 +130,7 @@ export default function ChatScreen() {
     if (!input.trim() || !chatId) return;
 
     try {
-      const token = await AsyncStorage.getItem("userToken");
+      const token = await AsyncStorage.getItem("token ");
       await axios.post(
         `https://fitness-admin-tau.vercel.app/api/mobile/chat/${chatId}/messages`,
         { content: input },

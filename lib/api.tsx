@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 // 1. Create a new Axios instance with a custom configuration
-const apiClient = axios.create({
+export const apiClient = axios.create({
   // Use the environment variable for the base URL
   baseURL: process.env.EXPO_PUBLIC_API_URL, 
   headers: {
@@ -15,6 +15,7 @@ apiClient.interceptors.request.use(
   async (config) => {
     // Use the new, correct function name: getItemAsync
     const token = await SecureStore.getItemAsync('token'); 
+    console.log("token in api.tsx",token)
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -63,6 +64,9 @@ export const createSchedule = (payload:any) => {
   return apiClient.post('/v0/api/schedule/create', payload);
 };
 
+export const getUpcomingSchedules = () => {
+  return apiClient.get('/v0/api/schedule/upcoming');
+};
 // ... add more functions for every other API endpoint you have ...
 
 
