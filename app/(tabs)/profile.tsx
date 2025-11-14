@@ -90,18 +90,18 @@ const TabTwoScreen: React.FC = () => {
 
   // Your alert functions and handleChange are fine.
   const askToDelete = () => Alert.alert("Delete Account", /*...*/);
-  const askToLogout = () => Alert.alert("Logout", /*...*/);
+  const askToLogout = logout;
   const handleChange = (value: string) => { /* ... */ };
 
   // FIX 4: Add a loading guard. This is the most important fix.
   // It prevents the component from crashing while the user data is being fetched.
-  if (!user) {
-    return (
-      <ThemedView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ffffff" />
-      </ThemedView>
-    );
-  }
+  // if (!user) {
+  //   return (
+  //     <ThemedView style={styles.loadingContainer}>
+  //       <ActivityIndicator size="large" color="#ffffff" />
+  //     </ThemedView>
+  //   );
+  // }
 
   // --- Main Render Block ---
   return (

@@ -18,6 +18,7 @@ interface User {
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  isLoading: boolean; 
   user: User|null;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
@@ -30,6 +31,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User|null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     checkAuth();
@@ -37,6 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     console.log("1. checkAuth function started."); // Log start
+    setIsLoading(true);
     try {
       const token = await SecureStore.getItemAsync("token");
       console.log("2. Token from SecureStore:", token); // Log the token
@@ -68,6 +71,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // This will catch any network errors or other exceptions
       console.error("7. FATAL: Error caught in checkAuth function:", error);
       await logout(); // Log out if there's any error
+    }finally{
+      setIsLoading(false);
     }
   };
 
@@ -89,7 +94,7 @@ const login = async (email: string, password: string) => {
 
     // 4. Update auth state and navigate
     setIsAuthenticated(true);
-    router.replace("/(tabs)");
+    // router.replace("/(tabs)");
 
   } catch (error) {
     console.error("Login failed:", error);
@@ -105,7 +110,7 @@ const login = async (email: string, password: string) => {
       await SecureStore.getItemAsync("token");
       setUser(response.data.user);
       setIsAuthenticated(true);
-      router.replace("/(tabs)");
+      // router.replace("/(tabs)");
     } catch (error) {
       console.error("Registration failed:", error);
       throw error;
@@ -117,14 +122,14 @@ const login = async (email: string, password: string) => {
       await SecureStore.deleteItemAsync("token");
       setUser(null);
       setIsAuthenticated(false);
-      router.replace("/welcome");
+      // router.replace("/welcome");
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, register, logout, checkAuth }}>
+    <AuthContext.Provider value={{ isAuthenticated,isLoading, user, login, register, logout, checkAuth }}>
       {children}
     </AuthContext.Provider>
   );

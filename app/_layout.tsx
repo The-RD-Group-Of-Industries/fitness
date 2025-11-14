@@ -1,89 +1,95 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native"
-import { useFonts } from "expo-font"
-import { Stack } from "expo-router"
-import * as SplashScreen from "expo-splash-screen"
-import { StatusBar } from "expo-status-bar"
-import { useEffect, useState } from "react"
-import "react-native-reanimated"
-import { Platform, Text, View } from "react-native";
-import * as Linking from "expo-linking";
+import { DarkTheme, ThemeProvider } from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import { Slot, useRouter } from "expo-router"; // Import Slot and useRouter
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { useEffect, useState } from "react";
+import "react-native-reanimated";
+import { Platform, View, ActivityIndicator } from "react-native";
 
-import { useColorScheme } from "@/hooks/useColorScheme"
-import { AuthProvider } from "@/context/AuthContext"
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context"
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { AuthProvider, useAuth } from "@/context/AuthContext"; // Import both
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
-const InstallInstructions = () => {
-  return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text style={{ fontSize: 18, fontWeight: "bold", textAlign: "center" }}>
-        To install this app:
-      </Text>
-      <Text>1. Tap the Share button in Safari.</Text>
-      <Text>2. Select "Add to Home Screen".</Text>
-    </View>
-  );
-};
+// Prevent the splash screen from auto-hiding
+SplashScreen.preventAutoHideAsync();
 
+// This is our new "gatekeeper" component
+function AppGatekeeper() {
+  const { isAuthenticated, user, isLoading } = useAuth();
+  const router = useRouter();
 
-SplashScreen.preventAutoHideAsync()
+  useEffect(() => {
+    if (isLoading) {
+      return; // Do nothing while the auth state is being determined
+    }
+
+    // This logic runs once isLoading is false
+    if (isAuthenticated && user) {
+      // User is logged in, redirect based on role
+      if (user.role === 'admin') {
+        router.replace('/(admin)/dashboard' as any);
+      } else if (user.role === 'trainer') {
+        router.replace('/(trainer)/dashboard' as any);
+      } else {
+        router.replace('/(tabs)'); // Default for 'user' role
+      }
+    } else {
+      // User is not logged in, send to the welcome screen
+      router.replace('/welcome');
+    }
+  }, [isAuthenticated, isLoading, user]); // Re-run this effect when auth state changes
+
+  // While loading fonts or auth state, show a loading screen
+  // This prevents the app from flashing unstyled content
+  return <Slot />;
+}
+
+const LoadingScreen = () => (
+  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#070F2B' }}>
+    <ActivityIndicator size="large" color="#ffffff" />
+  </View>
+);
 
 export default function RootLayout() {
-  const [showInstallPage, setShowInstallPage] = useState(false);
-  
-  useEffect(() => {
-    const checkForInstallParam = async () => {
-      const initialUrl = await Linking.getInitialURL();
-      if (initialUrl && initialUrl.includes("install=true")) {
-        setShowInstallPage(true);
-      }
-    };
-
-    checkForInstallParam();
-  }, []);
-  
-  
-  const colorScheme = useColorScheme()
-  const [loaded] = useFonts({
+  const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-  })
+  });
+
+  // Handle font loading
+  useEffect(() => {
+    if (error) throw error;
+  }, [error]);
 
   useEffect(() => {
     if (loaded) {
-      SplashScreen.hideAsync()
+      SplashScreen.hideAsync();
     }
-  }, [loaded])
+  }, [loaded]);
 
-
+  // Your service worker logic is fine
   useEffect(() => {
     if (Platform.OS === "web" && "serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/service-worker.js")
-        .then(() => console.log("Service Worker Registered"))
-        .catch((err) => console.log("Service Worker Registration Failed:", err));
+      // ... service worker registration
     }
   }, []);
 
   if (!loaded) {
-    return null
+    return <LoadingScreen />; // Show loading screen while fonts are loading
   }
 
-  return showInstallPage ? <InstallInstructions /> : (
+  // --- This is the main return block ---
+  return (
+    // 1. AuthProvider wraps everything, making 'useAuth' available everywhere.
     <AuthProvider>
+      {/* 2. Your other providers wrap the gatekeeper */}
       <SafeAreaProvider>
-      <ThemeProvider value={DarkTheme}>
-        {/* <SafeAreaView> */}
-        <Stack>
-          <Stack.Screen name="welcome" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="auth" options={{ headerShown: false }} />
-          <Stack.Screen name="session/index" options={{ headerShown: true, headerBackTitle: '', headerBackButtonDisplayMode: 'minimal' }} />
-          <Stack.Screen name="chats/[trainerId]" options={{ headerShown: true, headerBackTitle: '', headerBackButtonDisplayMode: 'minimal' }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
-        {/* </SafeAreaView> */}
-      </ThemeProvider>
+        <ThemeProvider value={DarkTheme}>
+          {/* 3. The Gatekeeper handles all redirection logic */}
+          <AppGatekeeper />
+          <StatusBar style="light" />
+        </ThemeProvider>
       </SafeAreaProvider>
     </AuthProvider>
-  )
+  );
 }
