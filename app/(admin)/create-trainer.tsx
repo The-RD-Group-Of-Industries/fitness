@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { ThemedView } from '@/components/ThemedView'; // Assuming you have this
-import { apiClient } from '../../lib/api'; // Make sure path is correct
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import {createTrainer} from '@/lib/api';
 
 export default function CreateTrainerScreen() {
   const [fullName, setFullName] = useState('');
@@ -20,7 +20,7 @@ export default function CreateTrainerScreen() {
     
     setLoading(true);
     try {
-      const response = await apiClient.post('/admin/create-trainer', {
+      const response = await createTrainer({
         fullName,
         email,
         password,
@@ -33,6 +33,7 @@ export default function CreateTrainerScreen() {
     } catch (error:any) {
       const errorMessage = error.response?.data?.message || 'An unexpected error occurred.';
       console.error('Failed to create trainer:', errorMessage);
+      console.log("error in create-trainer",error);
       Alert.alert('Creation Failed', errorMessage);
     } finally {
       setLoading(false);
