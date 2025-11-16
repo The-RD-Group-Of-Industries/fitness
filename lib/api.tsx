@@ -54,9 +54,21 @@ export const updateUserProfile = (updateData:any) => {
   return apiClient.put('/v0/api/user/me', updateData);
 };
 
+// ===TRAINER ENDPOINTS===
+export const getAllTrainers =()=>{
+  return apiClient.get('/v0/api/user/trainers')
+}
+export const getTrainer=()=>{
+  return apiClient.get('/v0/api/user/trainers/${trainerId}')
+}
+
 // === ADMIN ENDPOINTS ===
 export const createTrainer = (credentials:any) =>{
   return apiClient.post('/v0/api/admin/create-trainer',credentials)
+}
+
+export const getAllUser = ()=>{
+  return apiClient.get('/v0/api/admin/users');
 }
 
 

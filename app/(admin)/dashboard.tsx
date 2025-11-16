@@ -22,8 +22,7 @@ export default function AdminDashboard() {
   };
 
   const goToManageUsers = () => {
-    // router.push('/(admin)/manage-users'); // You can implement this later
-    alert("Manage Users screen not yet implemented.");
+    router.push('/(admin)/manage-users');
   };
 
   const goToViewSchedules = () => {

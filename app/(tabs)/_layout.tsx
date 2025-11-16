@@ -1,7 +1,6 @@
 import { Tabs } from "expo-router"
 import React from "react"
 import { Platform, TouchableOpacity } from "react-native"
-
 import { HapticTab } from "@/components/HapticTab"
 import { IconSymbol } from "@/components/ui/IconSymbol"
 import AntDesign from "@expo/vector-icons/AntDesign"
@@ -21,7 +20,7 @@ export default function TabLayout() {
 
   const BackButton = () => (
     <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingHorizontal: 8 }}>
-      {/* <Ionicons name="arrow-back" size={24} color={Colors[colorScheme ?? "light"].tint} /> */}
+      <Ionicons name="arrow-back" size={24} color={Colors[colorScheme ?? "light"].tint} />
     </TouchableOpacity>
   )
 
@@ -56,6 +55,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={22} name="house.fill" color={color} />,
         }}
         />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: 'Chat',
+          tabBarIcon: ({ color }) => <Ionicons name="chatbubbles" color={color} size={28} />,
+        }}
+      />
       <Tabs.Screen
         name="explore"
         options={{
