@@ -5,6 +5,7 @@ import { Feather, FontAwesome6 } from "@expo/vector-icons"
 import { useAuth } from "@/context/AuthContext"
 import axios from "axios"
 import { registerUser } from "@/lib/api"
+import * as SecureStore from 'expo-secure-store';
 
 
 
@@ -22,15 +23,20 @@ export default function RegisterScreen() {
       setLoading(true)
 
         const response = await registerUser({
-        fullName: name,
+        name: name,
         email: email,
         password: password,
       });
 
-      if (response.status === 201) {
-         alert("user created Succesfully")
+      // if (response.status === 201) {
+      //    alert("user created Succesfully")
                 // 1. Store the token (using your AuthContext or SecureStore)
         // await onLogin(response.data.token, response.data.user);
+        if (response.data && response.data.token) {
+        // Store the token securely
+        await SecureStore.setItemAsync('token', response.data.token);
+        alert('Success Registration successful!');
+
         router.replace('/(tabs)'); 
           
       }

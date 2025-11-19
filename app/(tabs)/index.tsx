@@ -3,109 +3,141 @@ import {
     View,
     Text,
     StyleSheet,
-    FlatList,
-    ActivityIndicator,
     TouchableOpacity,
-    Image,
     SafeAreaView,
     ScrollView,
-    Dimensions
+    Dimensions,
+    FlatList, // Import FlatList for the horizontal list
+    ActivityIndicator, // To show while loading
+    Image // To display trainer images
 } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
-import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'expo-router';
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { getAllTrainers } from '@/lib/api';
-import Upcoming from '@/components/main/Upcoming'; // Assuming this component exists
-
-// --- Define the Trainer type ---
-interface Trainer {
-    _id: string;
-    fullName: string;
-    email: string;
-    image?: string;
-    specialization?: string;
-}
+// --- Make sure to import your API function ---
+import { getAllTrainers } from '@/lib/api'; 
+import Upcoming from '@/components/main/Upcoming';
 
 // --- Responsive Calculations for Buttons ---
 const { width: screenWidth } = Dimensions.get('window');
-const boxWidth = (screenWidth * 0.9) / 2 - 8; // Calculated to fit with padding
+const boxWidth = (screenWidth * 0.9) / 2 - 8;
+
+// --- Define a type for the trainer data ---
+interface Trainer {
+    id: string;
+    name: string | null;
+    specialization: string | null;
+    image: string | null; // URL for the trainer's image
+}
 
 export default function HomeScreen() {
     const router = useRouter();
-    const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
-    const [trainers, setTrainers] = useState<Trainer[]>([]);
-    const [isFetching, setIsFetching] = useState(true);
+
+    // --- State for fetching trainers ---
+    const [trainers, setTrainers] = useState<Trainer[]>([]);4
+    // state for holding the trainer id
+    const [featuredTrainerId, setFeaturedTrainerId] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // --- Fetch trainers when the component mounts ---
+    useEffect(() => {
+        const fetchTrainers = async () => {
+            try {
+                const response = await getAllTrainers();
+                const trainerList = response.data.users || [];
+                // Assuming the API returns an object with a 'users' array
+                setTrainers(response.data.users || []); 
+                if (trainerList.length > 0) {
+                    setFeaturedTrainerId(trainerList[0].id);
+                }
+            } catch (err) {
+                setError("Failed to load trainers.");
+                console.error("Fetch trainers error:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchTrainers();
+    }, []);
 
     // --- Data for the top action buttons ---
     const buttonData = [
         {
-            title: "Chat",
-            Icon: "wechat",
-            background: {
-                stop_1: "teal",
-                stop_2: "seagreen",
-            },
-            onClick: () => router.push("/chats")
-        },
-        {
             title: "Book Session",
             Icon: "clock-o",
-            background: {
-                stop_1: "#9616f2",
-                stop_2: "#42009e",
-            },
-            onClick: () => router.push("/session")
+            background: { stop_1: "#9616f2", stop_2: "#42009e" },
+            onClick: () => {
+                if (featuredTrainerId) {
+                    router.push({
+                        pathname: "/session",
+                        params: { trainerId: featuredTrainerId }
+                    });
+                } else {
+                    alert("Trainer information is not available yet. Please wait a moment and try again.");
+                }
+            }
+        },
+        {
+            title: "Chat",
+            Icon: "wechat",
+            background: { stop_1: "teal", stop_2: "seagreen" },
+            onClick: () => router.push("/chats")
         },
     ];
 
-    // --- Function to fetch trainer data ---
-    const fetchTrainers = async () => {
-        if (!isAuthenticated) return;
-        try {
-            setIsFetching(true);
-            const response = await getAllTrainers();
-            setTrainers(response.data);
-        } catch (error) {
-            console.error("Failed to fetch trainers:", error);
-        } finally {
-            setIsFetching(false);
-        }
-    };
-
-    // --- Fetch trainers when component mounts or user is authenticated ---
-    useEffect(() => {
-        if (isAuthenticated) {
-            fetchTrainers();
-        } else if (!isAuthLoading) {
-            setIsFetching(false);
-        }
-    }, [isAuthenticated, isAuthLoading]);
-
-    const onTrainerPress = (id: string) => {
-        router.push(`/trainer/${id}`);
-    };
-
-    // --- Renders a single trainer item in the list ---
-    const renderTrainerItem = ({ item }: { item: Trainer }) => (
-        <TouchableOpacity style={styles.card} onPress={() => onTrainerPress(item._id)}>
-            <Image
-                source={item.image ? { uri: item.image } : require('@/assets/images/default-profile.png')}
-                style={styles.trainerImage}
-            />
-            <View style={styles.infoContainer}>
-                <Text style={styles.name}>{item.fullName}</Text>
-                {item.specialization && <Text style={styles.specialization}>{item.specialization}</Text>}
-            </View>
-            <Ionicons name="chevron-forward" size={24} color="#4A5568" />
-        </TouchableOpacity>
+    // --- Component to render each trainer card ---
+    const TrainerCard = ({ trainer }: { trainer: Trainer }) => (
+        <View style={styles.trainerCard}>
+            {trainer.image ? (
+                <Image source={{ uri: trainer.image }} style={styles.trainerImage} />
+            ) : (
+                // Placeholder if no image is available
+                <View style={styles.trainerImagePlaceholder}>
+                    <FontAwesome name="user" size={40} color="#555" />
+                </View>
+            )}
+            <Text style={styles.trainerName}>{trainer.name || 'Trainer'}</Text>
+            <Text style={styles.trainerSpec}>{trainer.specialization || 'Fitness'}</Text>
+        </View>
     );
+
+    // --- Component to render the list of trainers ---
+    const renderFeaturedTrainers = () => {
+        if (isLoading) {
+            return <ActivityIndicator size="large" color="#fff" style={{ marginTop: 20 }} />;
+        }
+
+        if (error) {
+            return <Text style={styles.errorText}>{error}</Text>;
+        }
+
+        return (
+            <FlatList
+                data={trainers}
+                renderItem={({ item }) => <TrainerCard trainer={item} />}
+                keyExtractor={item => item.id}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingLeft: 20, paddingRight: 10 }}
+            />
+        );
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
             <ThemedView style={styles.container}>
                 <ScrollView showsVerticalScrollIndicator={false}>
+                    {/* --- Informative Header Section --- */}
+                    <View style={styles.header}>
+                        <Text style={styles.title}>Welcome to Fitness Evolution</Text>
+                        <Text style={styles.subtitle}>
+                            Your personal guide to achieving your fitness goals. Book sessions and chat directly with your trainer, all in one place.
+                        </Text>
+                    </View>
+
                     {/* --- Top Action Buttons --- */}
                     <View style={styles.buttonRow}>
                         {buttonData.map((item, index) => (
@@ -122,31 +154,18 @@ export default function HomeScreen() {
                             </TouchableOpacity>
                         ))}
                     </View>
-
-                    {/* --- Trainer List Section --- */}
-                    <View style={styles.listHeader}>
-                        <Text style={styles.title}>Find Your Trainer</Text>
-                        <Text style={styles.subtitle}>
-                            Browse certified professionals to start your fitness journey.
-                        </Text>
+                    
+                    {/* --- NEW: Featured Trainer Section --- */}
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Featured Trainer</Text>
+                        {renderFeaturedTrainers()}
                     </View>
-
-                    {isFetching ? (
-                        <ActivityIndicator size="large" color="#4CAF50" style={{ marginTop: 20 }} />
-                    ) : (
-                        <FlatList
-                            data={trainers}
-                            keyExtractor={(item) => item._id}
-                            renderItem={renderTrainerItem}
-                            scrollEnabled={false} // Disable FlatList scrolling inside a ScrollView
-                            ListEmptyComponent={
-                                <View style={styles.centeredContainer}>
-                                    <Ionicons name="people-outline" size={60} color="#4A5568" />
-                                    <Text style={styles.emptyText}>No Trainers Available</Text>
-                                </View>
-                            }
-                        />
-                    )}
+                    
+                    {/* --- Upcoming Section --- */}
+                    {/* <View style={styles.section}>
+                         <Text style={styles.sectionTitle}>Upcoming</Text>
+                         <Upcoming />
+                    </View> */}
 
                 </ScrollView>
             </ThemedView>
@@ -154,7 +173,8 @@ export default function HomeScreen() {
     );
 }
 
-// --- Combined Stylesheet ---
+
+// --- Stylesheet ---
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
@@ -163,11 +183,25 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
+    header: {
+        paddingHorizontal: 20,
+        paddingBottom: 30,
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+        marginBottom: 8,
+    },
+    subtitle: {
+        fontSize: 16,
+        color: '#A0AEC0',
+        lineHeight: 24,
+    },
     buttonRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        marginBottom: 30,
     },
     box: {
         width: boxWidth,
@@ -188,59 +222,54 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         textAlign: 'center',
     },
-    listHeader: {
-        paddingHorizontal: 20,
-        marginBottom: 20,
+    // --- NEW STYLES ---
+    section: {
+        marginBottom: 30,
     },
-    title: {
-        fontSize: 28,
+    sectionTitle: {
+        fontSize: 22,
         fontWeight: 'bold',
-        color: '#FFFFFF',
-    },
-    subtitle: {
-        fontSize: 16,
-        color: '#A0AEC0',
-        marginTop: 8,
-    },
-    card: {
-        backgroundColor: '#1A202C',
-        borderRadius: 12,
-        padding: 15,
-        marginHorizontal: 20,
+        color: 'white',
         marginBottom: 15,
-        flexDirection: 'row',
+        paddingHorizontal: 20,
+        marginTop: 15,
+    },
+    trainerCard: {
+        width: 140,
+        height: 180,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        marginRight: 15,
         alignItems: 'center',
+        padding: 10,
     },
     trainerImage: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        marginRight: 15,
-        borderWidth: 2,
-        borderColor: '#4CAF50',
+        width: 90,
+        height: 90,
+        borderRadius: 45,
+        marginBottom: 10,
     },
-    infoContainer: {
-        flex: 1,
-    },
-    name: {
-        color: '#FFFFFF',
-        fontSize: 18,
-        fontWeight: '600',
-    },
-    specialization: {
-        color: '#A0AEC0',
-        fontSize: 14,
-        marginTop: 4,
-    },
-    centeredContainer: {
+    trainerImagePlaceholder: {
+        width: 90,
+        height: 90,
+        borderRadius: 45,
+        backgroundColor: '#f0f0f0',
         justifyContent: 'center',
         alignItems: 'center',
-        paddingVertical: 40,
+        marginBottom: 10,
     },
-    emptyText: {
-        color: '#FFFFFF',
-        fontSize: 18,
-        fontWeight: '600',
-        marginTop: 15,
+    trainerName: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    trainerSpec: {
+        fontSize: 14,
+        color: '#777',
+    },
+    errorText: {
+        color: 'red',
+        textAlign: 'center',
+        marginTop: 20,
     },
 });

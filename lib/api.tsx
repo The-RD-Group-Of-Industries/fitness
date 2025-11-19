@@ -33,11 +33,11 @@ apiClient.interceptors.request.use(
 
 // === AUTHENTICATION ENDPOINTS ===
 export const registerUser = (userData:any) => {
-  return apiClient.post('/v0/api/user/register', userData);
+  return apiClient.post('/api/mobile/auth/register', userData);
 };
 
 export const loginUser = (credentials:any) => {
-  return apiClient.post('/v0/api/user/login', credentials);
+  return apiClient.post('/api/mobile/auth/login', credentials);
 };
 
 export const verifyEmail = (email:string) => {
@@ -47,7 +47,7 @@ export const verifyEmail = (email:string) => {
 
 // === USER ENDPOINTS ===
 export const getUserDetails = () => {
-  return apiClient.get('/v0/api/user/me');
+  return apiClient.get('/api/mobile/user');
 };
 
 export const updateUserProfile = (updateData:any) => {
@@ -56,7 +56,7 @@ export const updateUserProfile = (updateData:any) => {
 
 // ===TRAINER ENDPOINTS===
 export const getAllTrainers =()=>{
-  return apiClient.get('/v0/api/user/trainers')
+  return apiClient.get('/api/mobile/users/trainer')
 }
 export const getTrainer=()=>{
   return apiClient.get('/v0/api/user/trainers/${trainerId}')
@@ -78,7 +78,7 @@ export const getMySchedules = () => {
 };
 
 export const createSchedule = (payload:any) => {
-  return apiClient.post('/v0/api/schedule/create', payload);
+  return apiClient.post('/api/mobile/schedule/create', payload);
 };
 
 export const getUpcomingSchedules = () => {

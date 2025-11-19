@@ -5,7 +5,7 @@ import apiClient from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { router } from 'expo-router';
 
-// A generic user type for our list
+
 interface ChatUser {
   _id: string;
   fullName: string;
