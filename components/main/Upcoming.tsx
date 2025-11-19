@@ -1,285 +1,173 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  Linking,
-} from "react-native";
-import React, { useEffect, useState } from "react";
-import { LinearGradient } from "expo-linear-gradient";
-import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from 'react';
+import { 
+    View, 
+    Text, 
+    StyleSheet, 
+    FlatList, 
+    ActivityIndicator, 
+    TouchableOpacity,
+    Linking
+} from 'react-native';
+import { getUpcomingSchedules } from '@/lib/api';
+import { useIsFocused } from '@react-navigation/native';
+import { FontAwesome } from '@expo/vector-icons';
 import * as WebBrowser from "expo-web-browser";
-import * as SecureStore from 'expo-secure-store';
-import { getUpcomingSchedules } from "@/lib/api"; 
 
-
-
+// --- Correct Type Definition to include 'pending' ---
 interface Schedule {
-  _id: string;
-  date: string;
-  startTime: string;
-  scheduleLink: string;
-  scheduleSubject: string;
-  status: string;
-  trainer: {
-    _id: string;
-    name: string;
-  }|null;
+    id: string;
+    startTime: string;
+    scheduleLink: string | null;
+    scheduleSubject: string;
+    status: 'requested' | 'pending' | 'confirmed' | 'cancelled'; // Added 'pending'
+    trainer: {
+        name: string | null;
+    };
 }
 
-export default function Upcoming() {
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [loading, setLoading] = useState(true);
+// --- Re-styled Schedule Card ---
+const ScheduleCard = ({ item }: { item: Schedule }) => {
 
-  useEffect(() => {
-    fetchUpcomingSchedules();
-  }, []);
+    const handlePress = async (url: string | null) => {
+        // Only attempt to open if a link exists
+        if (!url) {
+            alert("This session has not been approved yet. The meeting link is not available.");
+            return;
+        }
 
-  const fetchUpcomingSchedules = async () => {
-    try {
-      const response = await getUpcomingSchedules();
-      console.log("upcoming session in upload.tsx",response.data.schedules);
-      setSchedules(response.data.schedules);
-    } catch (error) {
-      console.error("Error fetching upcoming schedules:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+        try {
+            const supported = await Linking.canOpenURL(url);
+            if (supported) {
+                await Linking.openURL(url);
+            } else {
+                await WebBrowser.openBrowserAsync(url);
+            }
+        } catch (error) {
+            console.error("Failed to open link:", error);
+            alert("Could not open the meeting link.");
+        }
+    };
 
-  if (loading) {
+    // Format the date and time exactly as in your screenshot
+    const formattedDateTime = new Date(item.startTime).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    }).replace(' at', ' at'); // Clean up formatting
+
+    // A session is considered "joinable" if it has a link, regardless of status.
+    const isJoinable = !!item.scheduleLink;
+
     return (
-      <View style={css.loadingContainer}>
-        <ActivityIndicator size="large" color="#382eff" />
-      </View>
+        <TouchableOpacity 
+            style={styles.card} 
+            onPress={() => handlePress(item.scheduleLink)}
+            disabled={!isJoinable} // Disable button if there's no link
+            activeOpacity={0.7}
+        >
+            <View style={styles.iconContainer}>
+                 <FontAwesome 
+                    name="calendar-check-o" 
+                    size={24} 
+                    color={isJoinable ? '#F1C40F' : '#6c757d'} // Yellow for joinable, gray otherwise
+                />
+            </View>
+            <View style={styles.detailsContainer}>
+                <Text style={styles.cardTitle}>{item.scheduleSubject}</Text>
+                <Text style={styles.cardText}>{formattedDateTime}</Text>
+                <Text style={styles.cardText}>Trainer: {item.trainer.name || 'N/A'}</Text>
+            </View>
+        </TouchableOpacity>
     );
-  }
-
-const handlePress = async (url: string) => {
-  const appDeepLinks = ['zoomus://', 'msteams://', 'meet://'];
-  const isAppDeepLink = appDeepLinks.some(scheme => url.startsWith(scheme));
-
-  if (isAppDeepLink) {
-    const supported = await Linking.canOpenURL(url);
-    if (supported) {
-      try {
-        await Linking.openURL(url);
-      } catch (error) {
-        console.error("Failed to open app URL:", error);
-      }
-    } else {
-      console.error("App not installed or cannot open URL:", url);
-    }
-  } else {
-    try {
-      await WebBrowser.openBrowserAsync(url);
-    } catch (error) {
-      console.error("Failed to open in browser:", error);
-    }
-  }
 };
 
+// --- Main Upcoming Component ---
+export default function Upcoming() {
+    const [schedules, setSchedules] = useState<Schedule[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const isFocused = useIsFocused(); 
 
-  const formatTimeWithAMPM = (isoTimeString: string) => {
-    try {
-      // Create a Date object from the ISO string
-      // This automatically handles timezone conversion to local time
-      const date = new Date(isoTimeString);
-      
-      // Check if the date is valid
-      if (isNaN(date.getTime())) {
-        console.error("Invalid date string:", isoTimeString);
-        return "Invalid time";
-      }
-      
-      // Get hours and minutes in local timezone
-      let hours = date.getHours();
-      let minutes = date.getMinutes();
-      
-      // Convert to 12-hour format
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      hours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
-      
-      // Pad minutes with leading zero if needed
-      const minutesStr = minutes < 10 ? `0${minutes}` : `${minutes}`;
-      
-      return `${hours}:${minutesStr} ${ampm}`;
-    } catch (error) {
-      console.error("Error formatting time:", error);
-      return "Time format error";
-    }
-  };
-
-  const formatDateAndTime = (isoTimeString: string) => {
-    try {
-      const date = new Date(isoTimeString);
-      
-      if (isNaN(date.getTime())) {
-        return "Invalid date/time";
-      }
-      
-      // Format date: May 16, 2025
-      const options: Intl.DateTimeFormatOptions = { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      };
-      const dateStr = date.toLocaleDateString(undefined, options);
-      
-      // Get formatted time
-      const timeStr = formatTimeWithAMPM(isoTimeString);
-      
-      return `${dateStr} at ${timeStr}`;
-    } catch (error) {
-      console.error("Error formatting date and time:", error);
-      return "Date/time format error";
-    }
-  };
-
-  return (
-    <View style={css.container}>
-      <Text style={css.heading}>Upcoming</Text>
-
-      {schedules.length > 0 ? (
-        schedules.map((schedule) => (
-          <View style={css.box} key={schedule._id}>
-            <Text style={css.text}>
-              {/* {formatDate(schedule.date.split("T")[0])}{", "} */}
-              {formatDateAndTime(schedule.startTime)}
-              {/* {formatTime(schedule.startTime.split("T")[1].split(":").slice(0, 2).join(":"))} */}
-            </Text>
-            <Text style={css.title}>{schedule.scheduleSubject}</Text>
-            {schedule.status !== "requested" && (
-              <Text style={css.trainerName}>With {schedule.trainer?.name}</Text>
-            )}
-            <Text style={css.status}>Status - {schedule.status.toUpperCase()}</Text>
-            {schedule.status === "requested" && (
-              <LinearGradient
-                colors={
-                  schedule.status === "requested"
-                    ? ["#08027a", "#382eff"]
-                    : ["#08027a90", "#382eff90"]
+    useEffect(() => {
+        if (isFocused) {
+            const fetchSchedules = async () => {
+                try {
+                    !schedules.length && setIsLoading(true); // Only show full loader on first load
+                    const response = await getUpcomingSchedules();
+                    console.log("Backend Response for Upcoming Schedules:", JSON.stringify(response.data, null, 2));
+                    // --- This now correctly handles the "pending" status from your backend ---
+                    setSchedules(response.data.schedules || []);
+                } catch (error) {
+                    console.error("Failed to fetch upcoming schedules:", error);
+                } finally {
+                    setIsLoading(false);
                 }
-                start={{ x: 1, y: 0.9 }}
-                end={{ x: 0.3, y: 0.8 }}
-                style={css.button}
-              >
-                <TouchableOpacity>
-                  <Text
-                    style={[
-                      css.btnText,
-                      schedule.status === "requested" && { color: "#ffffff60" },
-                    ]}
-                  >
-                    Waiting for Approval
-                  </Text>
-                </TouchableOpacity>
-              </LinearGradient>
-            )}
+            };
+            fetchSchedules();
+        }
+    }, [isFocused]);
 
-            {schedule.status === "pending" && (
-              <LinearGradient
-                colors={["#08027a", "#382eff"]}
-                start={{ x: 1, y: 0.9 }}
-                end={{ x: 0.3, y: 0.8 }}
-                style={css.button}
-              >
-                <TouchableOpacity
-                  onPress={() => handlePress(schedule.scheduleLink)}
-                >
-                  <Text
-                    style={[
-                      css.btnText,
-                    ]}
-                  >
-                    Join Now
-                  </Text>
-                </TouchableOpacity>
-              </LinearGradient>
-            )}
-          </View>
-        ))
-      ) : (
-        <Text style={css.noSchedules}>No upcoming schedules</Text>
-      )}
-    </View>
-  );
+    if (isLoading) {
+        return <ActivityIndicator color="#fff" style={{ marginVertical: 40 }} />;
+    }
+
+    if (schedules.length === 0) {
+        return (
+            <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No upcoming schedules</Text>
+            </View>
+        );
+    }
+
+    return (
+        <FlatList
+            data={schedules}
+            renderItem={({ item }) => <ScheduleCard item={item} />}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{ paddingHorizontal: 20 }}
+            scrollEnabled={false}
+        />
+    );
 }
 
-const css = StyleSheet.create({
-  container: {
-    marginTop: 4,
-    paddingHorizontal: 10,
-  },
-  heading: {
-    fontSize: 34,
-    fontWeight: "900",
-    color: "white",
-  },
-  box: {
-    width: "100%",
-    height: 200,
-    backgroundColor: "##3246a840",
-    borderRadius: 14,
-    marginVertical: 10,
-    borderWidth: 1,
-    borderColor: "#3246a8",
-    padding: 10,
-    position: "relative",
-  },
-  text: {
-    position: "absolute",
-    left: 10,
-    top: 12,
-    fontSize: 18,
-    fontWeight: "400",
-    color: "white",
-  },
-  title: {
-    color: "white",
-    fontSize: 24,
-    paddingTop: 40,
-    fontWeight: "800",
-  },
-  trainerName: {
-    color: "gray",
-    marginTop: 4,
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  status: {
-    color: "#a1a1a1",
-    marginTop: 4,
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  button: {
-    position: "absolute",
-    bottom: 10,
-    left: 10,
-    width: "100%",
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    textAlign: "center",
-    borderRadius: 8,
-  },
-  btnText: {
-    textAlign: "center",
-    color: "white",
-    fontWeight: "600",
-    fontSize: 18,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  noSchedules: {
-    color: "white",
-    fontSize: 18,
-    textAlign: "center",
-    marginTop: 20,
-  },
+// --- Stylesheet to match your new design ---
+const styles = StyleSheet.create({
+    emptyContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 40,
+        paddingHorizontal: 20,
+    },
+    emptyText: {
+        color: '#A0AEC0',
+        fontSize: 16,
+        textAlign: 'center',
+    },
+    card: {
+        backgroundColor: '#1B2236',
+        borderRadius: 12,
+        padding: 18,
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 15,
+        borderWidth: 1,
+        borderColor: '#3246a8'
+    },
+    iconContainer: {
+        marginRight: 15,
+    },
+    detailsContainer: {
+        flex: 1,
+        gap: 6
+    },
+    cardTitle: {
+        color: 'white',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    cardText: {
+        color: '#A0AEC0',
+        fontSize: 15,
+    },
 });

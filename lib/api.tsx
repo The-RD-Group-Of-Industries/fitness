@@ -82,7 +82,7 @@ export const createSchedule = (payload:any) => {
 };
 
 export const getUpcomingSchedules = () => {
-  return apiClient.get('/v0/api/schedule/upcoming');
+  return apiClient.get('/api/mobile/schedule/upcoming');
 };
 // ... add more functions for every other API endpoint you have ...
 

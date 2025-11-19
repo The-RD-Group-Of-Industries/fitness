@@ -162,10 +162,10 @@ export default function HomeScreen() {
                     </View>
                     
                     {/* --- Upcoming Section --- */}
-                    {/* <View style={styles.section}>
+                    <View style={styles.section}>
                          <Text style={styles.sectionTitle}>Upcoming</Text>
                          <Upcoming />
-                    </View> */}
+                    </View>
 
                 </ScrollView>
             </ThemedView>
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     },
     // --- NEW STYLES ---
     section: {
-        marginBottom: 30,
+        // marginBottom: 30,
     },
     sectionTitle: {
         fontSize: 22,
