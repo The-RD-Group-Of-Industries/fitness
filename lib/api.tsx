@@ -15,7 +15,7 @@ apiClient.interceptors.request.use(
   async (config) => {
     // Use the new, correct function name: getItemAsync
     const token = await SecureStore.getItemAsync('token'); 
-    console.log("token in api.tsx",token)
+    // console.log("token in api.tsx",token)
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

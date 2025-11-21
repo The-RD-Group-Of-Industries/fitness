@@ -115,8 +115,8 @@ const TabTwoScreen: React.FC = () => {
 
             <View style={styles.cardPrimary}>
               <LinearGradient colors={["#704CC5", "#465EC2"]} style={styles.modCircle} start={{ x: 0.3, y: 1 }} end={{ y: 0, x: 0.3 }}>
-                {user.image ? (
-                  <Image source={{ uri: user.image }} style={styles.profileImage} />
+                {user?.image ? (
+                  <Image source={{ uri: user?.image }} style={styles.profileImage} />
                 ) : (
                   <View style={styles.iconContainer}>
                     <Ionicons name="person" size={normalize(32)} color={color} />
@@ -126,12 +126,12 @@ const TabTwoScreen: React.FC = () => {
 
               <View style={styles.boxText}>
                 {/* FIX 5: Use the 'user' object directly from the context. */}
-                <Text style={styles.name} numberOfLines={1}>{user.fullName}</Text>
-                <Text style={styles.email} numberOfLines={1}>{user.email}</Text>
+                <Text style={styles.name} numberOfLines={1}>{user?.fullName || 'Guest'}</Text>
+                <Text style={styles.email} numberOfLines={1}>{user?.email}</Text>
                 
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                   <Text style={[styles.email, styles.phone]} numberOfLines={1}>
-                    {user.phone || "Add Phone No."}
+                    {user?.phone || "Add Phone No."}
                   </Text>
                   <TouchableOpacity style={{ marginTop: 4 }} onPress={() => setChangeNumber(true)}>
                     <Ionicons name="pencil" size={14} color="white" />

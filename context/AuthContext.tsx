@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       const token = await SecureStore.getItemAsync("token");
-      console.log("2. Token from SecureStore:", token); // Log the token
+      // console.log("2. Token from SecureStore:", token); // Log the token
 
       if (token) {
         console.log("3. Token found. Calling getUserDetails...");
@@ -85,7 +85,7 @@ const login = async (email: string, password: string) => {
     // 2. The token is at response.data.token
     const token = response.data.token;
     await SecureStore.setItemAsync("token",token);
-    console.log("Token saved:", token);
+    // console.log("Token saved:", token);
 
     // 3. The user object is at response.data.user
     const user = response.data.user;
@@ -122,7 +122,7 @@ const login = async (email: string, password: string) => {
       await SecureStore.deleteItemAsync("token");
       setUser(null);
       setIsAuthenticated(false);
-      // router.replace("/welcome");
+      router.replace("/welcome");
     } catch (error) {
       console.error("Logout failed:", error);
     }
