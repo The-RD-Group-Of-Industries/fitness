@@ -27,7 +27,8 @@ export default function TabLayout() {
         name="explore"
         options={{
           title: "Explore",
-          tabBarIcon: ({ color }) => <AntDesign name="search1" size={24} color={color} />,
+         tabBarIcon: ({ color }) => <FontAwesome name="globe" size={24} color={color} />
+,
         }}
       />
       {/* ---- The "Workouts" tab is now enabled ---- */}
