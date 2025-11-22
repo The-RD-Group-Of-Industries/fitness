@@ -10,31 +10,41 @@ import {
 } from 'react-native';
 import { getUpcomingSchedules } from '@/lib/api';
 import { useIsFocused } from '@react-navigation/native';
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import * as WebBrowser from "expo-web-browser";
+import { useAuth } from '@/context/AuthContext';
 
-// --- Correct Type Definition to include 'pending' ---
+// --- Interface ---
 interface Schedule {
     id: string;
     startTime: string;
     scheduleLink: string | null;
     scheduleSubject: string;
-    status: 'requested' | 'pending' | 'confirmed' | 'cancelled'; // Added 'pending'
+    status: 'requested' | 'pending' | 'confirmed' | 'cancelled';
     trainer: {
         name: string | null;
     };
 }
 
-// --- Re-styled Schedule Card ---
+// --- Helper for Status Badge Color ---
+const getStatusColor = (status: string) => {
+    switch (status) {
+        case 'confirmed': return '#27ae60'; // Green
+        case 'pending': return '#f39c12';   // Orange
+        case 'requested': return '#3498db'; // Blue
+        case 'cancelled': return '#e74c3c'; // Red
+        default: return '#95a5a6';          // Gray
+    }
+};
+
+// --- Schedule Card Component ---
 const ScheduleCard = ({ item }: { item: Schedule }) => {
 
     const handlePress = async (url: string | null) => {
-        // Only attempt to open if a link exists
         if (!url) {
-            alert("This session has not been approved yet. The meeting link is not available.");
+            alert(`This session is currently ${item.status}. The meeting link is not available yet.`);
             return;
         }
-
         try {
             const supported = await Linking.canOpenURL(url);
             if (supported) {
@@ -48,36 +58,50 @@ const ScheduleCard = ({ item }: { item: Schedule }) => {
         }
     };
 
-    // Format the date and time exactly as in your screenshot
-    const formattedDateTime = new Date(item.startTime).toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'long',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-    }).replace(' at', ' at'); // Clean up formatting
+    // Date Formatting
+    const dateObj = new Date(item.startTime);
+    const date = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+    const time = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    const formattedDateTime = `${date} at ${time}`;
 
-    // A session is considered "joinable" if it has a link, regardless of status.
     const isJoinable = !!item.scheduleLink;
 
     return (
         <TouchableOpacity 
             style={styles.card} 
             onPress={() => handlePress(item.scheduleLink)}
-            disabled={!isJoinable} // Disable button if there's no link
+            disabled={!isJoinable} 
             activeOpacity={0.7}
         >
             <View style={styles.iconContainer}>
+                 {/* Show Calendar Icon */}
                  <FontAwesome 
                     name="calendar-check-o" 
-                    size={24} 
-                    color={isJoinable ? '#F1C40F' : '#6c757d'} // Yellow for joinable, gray otherwise
+                    size={28} 
+                    color={isJoinable ? '#F1C40F' : '#5a647d'} 
                 />
             </View>
+
             <View style={styles.detailsContainer}>
-                <Text style={styles.cardTitle}>{item.scheduleSubject}</Text>
-                <Text style={styles.cardText}>{formattedDateTime}</Text>
-                <Text style={styles.cardText}>Trainer: {item.trainer.name || 'N/A'}</Text>
+                <Text style={styles.cardTitle} numberOfLines={1}>{item.scheduleSubject}</Text>
+                
+                <View style={styles.row}>
+                    <MaterialIcons name="access-time" size={14} color="#A0AEC0" />
+                    <Text style={styles.cardText}>{formattedDateTime}</Text>
+                </View>
+
+                <View style={styles.row}>
+                    <MaterialIcons name="person" size={14} color="#A0AEC0" />
+                    <Text style={styles.cardText}>Trainer: {item.trainer.name || 'N/A'}</Text>
+                </View>
+            </View>
+
+            {/* Status Badge on the Right */}
+            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}> 
+                {/* '20' adds transparency to the background color */}
+                <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
+                    {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                </Text>
             </View>
         </TouchableOpacity>
     );
@@ -88,34 +112,46 @@ export default function Upcoming() {
     const [schedules, setSchedules] = useState<Schedule[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const isFocused = useIsFocused(); 
+    const { isAuthenticated } = useAuth();
 
     useEffect(() => {
-        if (isFocused) {
-            const fetchSchedules = async () => {
-                try {
-                    !schedules.length && setIsLoading(true); // Only show full loader on first load
-                    const response = await getUpcomingSchedules();
-                    console.log("Backend Response for Upcoming Schedules:", JSON.stringify(response.data, null, 2));
-                    // --- This now correctly handles the "pending" status from your backend ---
-                    setSchedules(response.data.schedules || []);
-                } catch (error) {
-                    console.error("Failed to fetch upcoming schedules:", error);
-                } finally {
-                    setIsLoading(false);
-                }
-            };
+        if (isAuthenticated && isFocused) {
             fetchSchedules();
         }
-    }, [isFocused]);
+    }, [isFocused, isAuthenticated]);
 
-    if (isLoading) {
+    const fetchSchedules = async () => {
+        try {
+            // Only show loader if we have no data yet
+            if (schedules.length === 0) setIsLoading(true);
+            
+            const response = await getUpcomingSchedules();
+            // console.log("Schedules:", response.data);
+
+            // Safety check for array
+            const scheduleData = response.data.schedules || response.data || [];
+            
+            // Sort by date (nearest first)
+            const sorted = Array.isArray(scheduleData) 
+                ? scheduleData.sort((a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+                : [];
+
+            setSchedules(sorted);
+        } catch (error) {
+            console.error("Failed to fetch upcoming schedules:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    if (isLoading && schedules.length === 0) {
         return <ActivityIndicator color="#fff" style={{ marginVertical: 40 }} />;
     }
 
     if (schedules.length === 0) {
         return (
             <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No upcoming schedules</Text>
+                <Text style={styles.emptyText}>No upcoming sessions.</Text>
             </View>
         );
     }
@@ -125,49 +161,82 @@ export default function Upcoming() {
             data={schedules}
             renderItem={({ item }) => <ScheduleCard item={item} />}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={{ paddingHorizontal: 20 }}
-            scrollEnabled={false}
+            contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 20 }} // Removed horizontal padding to match screenshot width
+            scrollEnabled={false} // Assuming this is inside a ScrollView
         />
     );
 }
 
-// --- Stylesheet to match your new design ---
+// --- Styles ---
 const styles = StyleSheet.create({
     emptyContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 40,
-        paddingHorizontal: 20,
+        paddingVertical: 30,
+        backgroundColor: '#1B2236',
+        borderRadius: 12,
+        marginTop: 10,
+        borderWidth: 1,
+        borderColor: '#233055'
     },
     emptyText: {
-        color: '#A0AEC0',
-        fontSize: 16,
-        textAlign: 'center',
+        color: '#718096',
+        fontSize: 15,
     },
     card: {
         backgroundColor: '#1B2236',
-        borderRadius: 12,
-        padding: 18,
+        borderRadius: 16,
+        padding: 16,
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 15,
+        marginBottom: 12,
         borderWidth: 1,
-        borderColor: '#3246a8'
+        borderColor: '#2D364F',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
     },
     iconContainer: {
-        marginRight: 15,
+        marginRight: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#232D45',
+        width: 48,
+        height: 48,
+        borderRadius: 12,
     },
     detailsContainer: {
         flex: 1,
-        gap: 6
+        gap: 4,
+    },
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
     },
     cardTitle: {
         color: 'white',
-        fontSize: 18,
-        fontWeight: 'bold',
+        fontSize: 16,
+        fontWeight: '700',
+        marginBottom: 2,
     },
     cardText: {
         color: '#A0AEC0',
-        fontSize: 15,
+        fontSize: 13,
+        fontWeight: '500',
+    },
+    statusBadge: {
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+        borderRadius: 6,
+        marginLeft: 8,
+        alignSelf: 'flex-start', // Aligns badge to top-right roughly
+    },
+    statusText: {
+        fontSize: 11,
+        fontWeight: '700',
+        textTransform: 'uppercase',
     },
 });

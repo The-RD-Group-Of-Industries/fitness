@@ -5,6 +5,7 @@ import { FontAwesome6 } from "@expo/vector-icons"
 import { useAuth } from "@/context/AuthContext"
 import Feather from '@expo/vector-icons/Feather';
 
+
 export default function LoginScreen() {
   const router = useRouter()
   const { login } = useAuth()
@@ -220,3 +221,6 @@ const styles = StyleSheet.create({
     color: "#382eff",
   },
 })
+
+
+

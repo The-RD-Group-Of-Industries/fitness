@@ -47,7 +47,6 @@ export default function Session() {
     const params = useLocalSearchParams();
     const { trainerId } = params;
 
-
     const sessionTypes: SessionType[] = [
         { title: "Personal Training", subTitle: "1-on-1 session", charge: 799, value: "personal" },
         { title: "Group Training", subTitle: "Up to 5 people", charge: 199, value: "group" },
@@ -140,12 +139,15 @@ const onPickerConfirm = () => {
     }
 };
 
+console.log("SENDING TRAINER ID:", trainerId);
 
     const handleSubmit = async () => {
         if (!trainerId) {
             Alert.alert("Error", "Trainer ID is missing. Please go back and try again.");
             return;
         }
+        console.log("trainer id in session",trainerId);
+        // console.log("userid in session",user.id);
         try {
             setLoading(true);
 

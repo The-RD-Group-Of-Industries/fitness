@@ -6,7 +6,7 @@ import * as SecureStore from 'expo-secure-store';
 
 // Add this interface at the top of your AuthContext.tsx
 interface User {
-  _id: string;
+  id: string;
   fullName: string;
   email: string;
   role: string;
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // --- CRITICAL CHECK ---
         // Make sure response.data.user actually exists before trying to set it.
-        if (response.data && response.data._id) {
+        if (response.data && response.data.id) {
           console.log("5. User object found in response. Setting user state.");
           setUser(response.data); // This is the goal
           setIsAuthenticated(true);

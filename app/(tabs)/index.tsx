@@ -18,6 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 // --- Make sure to import your API function ---
 import { getAllTrainers } from '@/lib/api'; 
 import Upcoming from '@/components/main/Upcoming';
+import { useAuth } from '@/context/AuthContext';
 
 // --- Responsive Calculations for Buttons ---
 const { width: screenWidth } = Dimensions.get('window');
@@ -33,6 +34,7 @@ interface Trainer {
 
 export default function HomeScreen() {
     const router = useRouter();
+    const { isAuthenticated } = useAuth(); 
 
     // --- State for fetching trainers ---
     const [trainers, setTrainers] = useState<Trainer[]>([]);4
@@ -43,25 +45,26 @@ export default function HomeScreen() {
 
     // --- Fetch trainers when the component mounts ---
     useEffect(() => {
-        const fetchTrainers = async () => {
-            try {
-                const response = await getAllTrainers();
-                const trainerList = response.data.users || [];
-                // Assuming the API returns an object with a 'users' array
-                setTrainers(response.data.users || []); 
-                if (trainerList.length > 0) {
-                    setFeaturedTrainerId(trainerList[0].id);
+        if(isAuthenticated){
+            const fetchTrainers = async () => {
+                try {
+                    const response = await getAllTrainers();
+                    const trainerList = response.data.users || [];
+                    // Assuming the API returns an object with a 'users' array
+                    setTrainers(response.data.users || []); 
+                    if (trainerList.length > 0) {
+                        setFeaturedTrainerId(trainerList[0].id);
+                    }
+                } catch (err) {
+                    setError("Failed to load trainers.");
+                    console.error("Fetch trainers error:", err);
+                } finally {
+                    setIsLoading(false);
                 }
-            } catch (err) {
-                setError("Failed to load trainers.");
-                console.error("Fetch trainers error:", err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchTrainers();
-    }, []);
+            };        
+            fetchTrainers();
+        }
+    }, [isAuthenticated]);
 
     // --- Data for the top action buttons ---
     const buttonData = [
