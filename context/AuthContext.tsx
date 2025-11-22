@@ -46,12 +46,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (token) {
         console.log("3. Token found. Calling getUserDetails...");
-        const response = await getUserDetails();
-        console.log("4. Response from getUserDetails:", response.data); // Log the full response data
+        const response = await getUserDetails();        // console.log("4. Response from getUserDetails:", response.data); // Log the full response data
 
         // --- CRITICAL CHECK ---
+        const userData = response.data.user || response.data; 
         // Make sure response.data.user actually exists before trying to set it.
-        if (response.data && response.data.id) {
+        if (userData && userData.id) {
           console.log("5. User object found in response. Setting user state.");
           setUser(response.data); // This is the goal
           setIsAuthenticated(true);
@@ -90,7 +90,7 @@ const login = async (email: string, password: string) => {
     // 3. The user object is at response.data.user
     const user = response.data.user;
     setUser(user);
-    console.log("User object set in context:", user);
+    // console.log("User object set in context:", user);
 
     // 4. Update auth state and navigate
     setIsAuthenticated(true);

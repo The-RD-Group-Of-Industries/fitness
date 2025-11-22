@@ -7,51 +7,45 @@ import {
     SafeAreaView,
     ScrollView,
     Dimensions,
-    FlatList, // Import FlatList for the horizontal list
-    ActivityIndicator, // To show while loading
-    Image // To display trainer images
+    FlatList,
+    ActivityIndicator,
+    Image,
+    Alert
 } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-// --- Make sure to import your API function ---
-import { getAllTrainers } from '@/lib/api'; 
+import { getAllTrainers, apiClient } from '@/lib/api'; // Ensure apiClient is imported
 import Upcoming from '@/components/main/Upcoming';
 import { useAuth } from '@/context/AuthContext';
 
-// --- Responsive Calculations for Buttons ---
 const { width: screenWidth } = Dimensions.get('window');
 const boxWidth = (screenWidth * 0.9) / 2 - 8;
 
-// --- Define a type for the trainer data ---
 interface Trainer {
     id: string;
     name: string | null;
     specialization: string | null;
-    image: string | null; // URL for the trainer's image
+    image: string | null;
 }
 
 export default function HomeScreen() {
     const router = useRouter();
-    const { isAuthenticated } = useAuth(); 
-
-    // --- State for fetching trainers ---
-    const [trainers, setTrainers] = useState<Trainer[]>([]);4
-    // state for holding the trainer id
+    const { isAuthenticated } = useAuth();
+    const [trainers, setTrainers] = useState<Trainer[]>([]);
     const [featuredTrainerId, setFeaturedTrainerId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isStartingChat, setIsStartingChat] = useState(false); // Loading state for chat
 
-    // --- Fetch trainers when the component mounts ---
     useEffect(() => {
-        if(isAuthenticated){
+        if (isAuthenticated) {
             const fetchTrainers = async () => {
                 try {
                     const response = await getAllTrainers();
                     const trainerList = response.data.users || [];
-                    // Assuming the API returns an object with a 'users' array
-                    setTrainers(response.data.users || []); 
+                    setTrainers(trainerList);
                     if (trainerList.length > 0) {
                         setFeaturedTrainerId(trainerList[0].id);
                     }
@@ -61,12 +55,44 @@ export default function HomeScreen() {
                 } finally {
                     setIsLoading(false);
                 }
-            };        
+            };
             fetchTrainers();
         }
     }, [isAuthenticated]);
 
-    // --- Data for the top action buttons ---
+    // --- NEW: Start Chat Function ---
+    const handleStartChat = async (trainerId: string, trainerName: string) => {
+        if (isStartingChat) return;
+        setIsStartingChat(true);
+
+        try {
+            // Call backend to create or get existing chat
+            const response = await apiClient.post('/api/mobile/chat/create', {
+                trainerId: trainerId
+            });
+
+            const chat = response.data.chat;
+
+            if (chat && chat.id) {
+                // Navigate to Chat Screen
+                router.push({
+                    pathname: "/chat/[id]",
+                    params: { 
+                        id: chat.id, 
+                        name: trainerName || 'Trainer' 
+                    }
+                });
+            } else {
+                Alert.alert("Error", "Could not start chat session.");
+            }
+        } catch (error) {
+            console.error("Start chat error:", error);
+            Alert.alert("Error", "Failed to connect with trainer.");
+        } finally {
+            setIsStartingChat(false);
+        }
+    };
+
     const buttonData = [
         {
             title: "Book Session",
@@ -79,43 +105,51 @@ export default function HomeScreen() {
                         params: { trainerId: featuredTrainerId }
                     });
                 } else {
-                    alert("Trainer information is not available yet. Please wait a moment and try again.");
+                    alert("Trainer information is not available yet.");
                 }
             }
         },
         {
-            title: "Chat",
+            title: "My Chats", // Renamed for clarity
             Icon: "wechat",
             background: { stop_1: "teal", stop_2: "seagreen" },
-            onClick: () => router.push("/chats")
+            onClick: () => router.push("/chat") // Goes to Chat List
         },
     ];
 
-    // --- Component to render each trainer card ---
+    // --- Updated Trainer Card with Chat Button ---
     const TrainerCard = ({ trainer }: { trainer: Trainer }) => (
-        <View style={styles.trainerCard}>
+        <TouchableOpacity 
+            activeOpacity={0.9}
+            style={styles.trainerCard}
+            onPress={() => {
+                // Optional: Clicking card opens profile, or starts chat directly
+                handleStartChat(trainer.id, trainer.name || 'Trainer');
+            }}
+        >
             {trainer.image ? (
                 <Image source={{ uri: trainer.image }} style={styles.trainerImage} />
             ) : (
-                // Placeholder if no image is available
                 <View style={styles.trainerImagePlaceholder}>
                     <FontAwesome name="user" size={40} color="#555" />
                 </View>
             )}
-            <Text style={styles.trainerName}>{trainer.name || 'Trainer'}</Text>
-            <Text style={styles.trainerSpec}>{trainer.specialization || 'Fitness'}</Text>
-        </View>
+            <Text style={styles.trainerName} numberOfLines={1}>{trainer.name || 'Trainer'}</Text>
+            <Text style={styles.trainerSpec} numberOfLines={1}>{trainer.specialization || 'Fitness'}</Text>
+            
+            {/* Mini Chat Button inside Card */}
+            <TouchableOpacity 
+                style={styles.chatMiniBtn}
+                onPress={() => handleStartChat(trainer.id, trainer.name || 'Trainer')}
+            >
+                <Text style={styles.chatMiniText}>Chat Now</Text>
+            </TouchableOpacity>
+        </TouchableOpacity>
     );
 
-    // --- Component to render the list of trainers ---
     const renderFeaturedTrainers = () => {
-        if (isLoading) {
-            return <ActivityIndicator size="large" color="#fff" style={{ marginTop: 20 }} />;
-        }
-
-        if (error) {
-            return <Text style={styles.errorText}>{error}</Text>;
-        }
+        if (isLoading) return <ActivityIndicator size="large" color="#fff" style={{ marginTop: 20 }} />;
+        if (error) return <Text style={styles.errorText}>{error}</Text>;
 
         return (
             <FlatList
@@ -133,15 +167,15 @@ export default function HomeScreen() {
         <SafeAreaView style={styles.safeArea}>
             <ThemedView style={styles.container}>
                 <ScrollView showsVerticalScrollIndicator={false}>
-                    {/* --- Informative Header Section --- */}
+                    {/* Header */}
                     <View style={styles.header}>
                         <Text style={styles.title}>Welcome to Fitness Evolution</Text>
                         <Text style={styles.subtitle}>
-                            Your personal guide to achieving your fitness goals. Book sessions and chat directly with your trainer, all in one place.
+                            Your personal guide to achieving your fitness goals. Book sessions and chat directly with your trainer.
                         </Text>
                     </View>
 
-                    {/* --- Top Action Buttons --- */}
+                    {/* Action Buttons */}
                     <View style={styles.buttonRow}>
                         {buttonData.map((item, index) => (
                             <TouchableOpacity onPress={item.onClick} key={index} activeOpacity={0.85}>
@@ -151,61 +185,45 @@ export default function HomeScreen() {
                                     end={{ x: 0, y: 0.4 }}
                                     style={styles.box}
                                 >
-                                    <FontAwesome name={item.Icon as "wechat" | "clock-o"} size={36} color="white" />
+                                    <FontAwesome name={item.Icon as any} size={36} color="white" />
                                     <Text style={styles.boxText}>{item.title}</Text>
                                 </LinearGradient>
                             </TouchableOpacity>
                         ))}
                     </View>
-                    
-                    {/* --- NEW: Featured Trainer Section --- */}
+
+                    {/* Featured Trainers */}
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Featured Trainer</Text>
+                        <Text style={styles.sectionTitle}>Featured Trainers</Text>
                         {renderFeaturedTrainers()}
                     </View>
-                    
-                    {/* --- Upcoming Section --- */}
+
+                    {/* Upcoming Sessions */}
                     <View style={styles.section}>
                          <Text style={styles.sectionTitle}>Upcoming</Text>
                          <Upcoming />
                     </View>
 
                 </ScrollView>
+                
+                {/* Global Loading Overlay (Optional) */}
+                {isStartingChat && (
+                    <View style={styles.loadingOverlay}>
+                        <ActivityIndicator size="large" color="#fff" />
+                    </View>
+                )}
             </ThemedView>
         </SafeAreaView>
     );
 }
 
-
-// --- Stylesheet ---
 const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        backgroundColor: '#070F2B',
-    },
-    container: {
-        flex: 1,
-    },
-    header: {
-        paddingHorizontal: 20,
-        paddingBottom: 30,
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-        marginBottom: 8,
-    },
-    subtitle: {
-        fontSize: 16,
-        color: '#A0AEC0',
-        lineHeight: 24,
-    },
-    buttonRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-    },
+    safeArea: { flex: 1, backgroundColor: '#070F2B' },
+    container: { flex: 1 },
+    header: { paddingHorizontal: 20, paddingBottom: 30 },
+    title: { fontSize: 28, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8 },
+    subtitle: { fontSize: 16, color: '#A0AEC0', lineHeight: 24 },
+    buttonRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20 },
     box: {
         width: boxWidth,
         height: boxWidth * 0.85,
@@ -215,64 +233,44 @@ const styles = StyleSheet.create({
         shadowColor: '#000',
         shadowOpacity: 0.1,
         shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 4,
         elevation: 3,
     },
-    boxText: {
-        color: 'white',
-        fontSize: 15,
-        marginTop: 8,
-        fontWeight: '600',
-        textAlign: 'center',
-    },
-    // --- NEW STYLES ---
-    section: {
-        // marginBottom: 30,
-    },
-    sectionTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: 'white',
-        marginBottom: 15,
-        paddingHorizontal: 20,
-        marginTop: 15,
-    },
+    boxText: { color: 'white', fontSize: 15, marginTop: 8, fontWeight: '600' },
+    section: {},
+    sectionTitle: { fontSize: 22, fontWeight: 'bold', color: 'white', marginBottom: 15, paddingHorizontal: 20, marginTop: 15 },
+    
+    // Trainer Card Styles
     trainerCard: {
         width: 140,
-        height: 180,
-        backgroundColor: '#fff',
+        height: 210, // Increased height for button
+        backgroundColor: '#1B2236',
         borderRadius: 12,
         marginRight: 15,
         alignItems: 'center',
         padding: 10,
+        justifyContent: 'space-between'
     },
-    trainerImage: {
-        width: 90,
-        height: 90,
-        borderRadius: 45,
-        marginBottom: 10,
+    trainerImage: { width: 80, height: 80, borderRadius: 40, marginBottom: 5 },
+    trainerImagePlaceholder: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center', marginBottom: 5 },
+    trainerName: { fontSize: 16, fontWeight: 'bold', color: '#FFFFFF', textAlign: 'center' },
+    trainerSpec: { fontSize: 12, color: '#777', textAlign: 'center', marginBottom: 5 },
+    
+    chatMiniBtn: {
+        backgroundColor: '#306BFF',
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 20,
+        marginTop: 5,
+        width: '100%',
+        alignItems: 'center'
     },
-    trainerImagePlaceholder: {
-        width: 90,
-        height: 90,
-        borderRadius: 45,
-        backgroundColor: '#f0f0f0',
+    chatMiniText: { color: 'white', fontSize: 12, fontWeight: 'bold' },
+
+    errorText: { color: 'red', textAlign: 'center', marginTop: 20 },
+    loadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.5)',
         justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 10,
-    },
-    trainerName: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    trainerSpec: {
-        fontSize: 14,
-        color: '#777',
-    },
-    errorText: {
-        color: 'red',
-        textAlign: 'center',
-        marginTop: 20,
-    },
+        alignItems: 'center'
+    }
 });

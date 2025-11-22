@@ -161,7 +161,7 @@ export default function Upcoming() {
             data={schedules}
             renderItem={({ item }) => <ScheduleCard item={item} />}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 20 }} // Removed horizontal padding to match screenshot width
+            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }} // Removed horizontal padding to match screenshot width
             scrollEnabled={false} // Assuming this is inside a ScrollView
         />
     );

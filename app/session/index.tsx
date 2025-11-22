@@ -139,7 +139,7 @@ const onPickerConfirm = () => {
     }
 };
 
-console.log("SENDING TRAINER ID:", trainerId);
+// console.log("SENDING TRAINER ID:", trainerId);
 
     const handleSubmit = async () => {
         if (!trainerId) {
@@ -268,11 +268,14 @@ const styles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: "#090E26",
         paddingHorizontal: 20,
+        paddingVertical: -30, // Added explicit vertical padding for header
+        borderBottomWidth: 1,
+        borderBottomColor: '#1B2236' // Optional: Adds a subtle line separator
     },
     backBtn: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#141A35",
@@ -283,12 +286,22 @@ const styles = StyleSheet.create({
         flex: 1,
         textAlign: "center",
         color: "#fff",
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: "700",
-        marginRight: 44,
+        marginRight: 40, // Balances the back button width
     },
-    pageContent: { padding: 20, gap: 22 },
-    heading: { fontSize: 27, fontWeight: "800", color: "white" },
+    pageContent: { 
+        paddingHorizontal: 20, 
+        paddingTop: 8,    // REDUCED from default padding
+        paddingBottom: 40,
+        gap: 15            // REDUCED GAP from 22 to 15
+    },
+    heading: { 
+        fontSize: 24,      // Slightly smaller to fit better
+        fontWeight: "800", 
+        color: "white",
+        marginBottom: 5    // Small margin instead of relying on parent gap
+    },
     box: {
         padding: 14,
         backgroundColor: "#1B2236",
@@ -297,8 +310,8 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         gap: 12,
     },
-    text: { color: "white", fontWeight: "700", fontSize: 18 },
-    subTxt: { color: "gray", fontSize: 14 },
+    text: { color: "white", fontWeight: "700", fontSize: 16 },
+    subTxt: { color: "gray", fontSize: 13 },
     col: { gap: 12 },
     row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
     longBox: {
@@ -321,12 +334,12 @@ const styles = StyleSheet.create({
         borderColor: "#3082fc",
         borderRadius: 8,
     },
-    dateTimeLabel: { color: "white", fontSize: 16 },
-    dateTimeValue: { fontWeight: "700", color: "white", fontSize: 16 },
-    button: { width: "100%", paddingVertical: 16, borderRadius: 10 },
+    dateTimeLabel: { color: "white", fontSize: 15 },
+    dateTimeValue: { fontWeight: "700", color: "white", fontSize: 15 },
+    button: { width: "100%", paddingVertical: 16, borderRadius: 10, marginTop: 10 },
     btnText: { color: "white", fontWeight: "700", fontSize: 18, textAlign: 'center' },
     
-    // --- Styles for the new Modal ---
+    // Modal Styles (Keep existing ones)
     modalBackdrop: {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
@@ -359,3 +372,4 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
 });
+
