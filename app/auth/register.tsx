@@ -3,9 +3,8 @@ import { useState } from "react"
 import { Stack, useRouter } from "expo-router"
 import { Feather, FontAwesome6 } from "@expo/vector-icons"
 import { useAuth } from "@/context/AuthContext"
-import axios from "axios"
-import { registerUser } from "@/lib/api"
 import * as SecureStore from 'expo-secure-store';
+
 
 
 
@@ -16,33 +15,18 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [view, setView] = useState(false)
+  const {register} = useAuth();
 
 
   const handleRegister = async () => {
     try {
       setLoading(true)
 
-        const response = await registerUser({
-        name: name,
-        email: email,
-        password: password,
-      });
-
-      // if (response.status === 201) {
-      //    alert("user created Succesfully")
-                // 1. Store the token (using your AuthContext or SecureStore)
-        // await onLogin(response.data.token, response.data.user);
-        if (response.data && response.data.token) {
-        // Store the token securely
-        await SecureStore.setItemAsync('token', response.data.token);
-        alert('Success Registration successful!');
-
-        router.replace('/(tabs)'); 
-          
+        await register(name,email,password);
       }
-} 
     catch (error) {
       console.error("Registration error:", error)
+      alert("Registration failed!")
       // Handle error appropriately
     } finally {
       setLoading(false)

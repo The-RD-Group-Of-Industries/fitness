@@ -37,7 +37,7 @@ const getStatusColor = (status: string) => {
     }
 };
 
-// --- Schedule Card Component ---
+// --- Schedule Card Component with Join Button ---
 const ScheduleCard = ({ item }: { item: Schedule }) => {
 
     const handlePress = async (url: string | null) => {
@@ -67,14 +67,9 @@ const ScheduleCard = ({ item }: { item: Schedule }) => {
     const isJoinable = !!item.scheduleLink;
 
     return (
-        <TouchableOpacity 
-            style={styles.card} 
-            onPress={() => handlePress(item.scheduleLink)}
-            disabled={!isJoinable} 
-            activeOpacity={0.7}
-        >
+        <View style={styles.card}>
             <View style={styles.iconContainer}>
-                 {/* Show Calendar Icon */}
+                 {/* Calendar Icon */}
                  <FontAwesome 
                     name="calendar-check-o" 
                     size={28} 
@@ -84,26 +79,33 @@ const ScheduleCard = ({ item }: { item: Schedule }) => {
 
             <View style={styles.detailsContainer}>
                 <Text style={styles.cardTitle} numberOfLines={1}>{item.scheduleSubject}</Text>
-                
                 <View style={styles.row}>
                     <MaterialIcons name="access-time" size={14} color="#A0AEC0" />
                     <Text style={styles.cardText}>{formattedDateTime}</Text>
                 </View>
-
                 <View style={styles.row}>
                     <MaterialIcons name="person" size={14} color="#A0AEC0" />
                     <Text style={styles.cardText}>Trainer: {item.trainer.name || 'N/A'}</Text>
                 </View>
+                {/* --- Join Button --- */}
+                {isJoinable && (
+                    <TouchableOpacity 
+                        style={styles.joinBtn} 
+                        onPress={() => handlePress(item.scheduleLink)}
+                        activeOpacity={0.8}
+                    >
+                        <Text style={styles.joinBtnText}>Join</Text>
+                    </TouchableOpacity>
+                )}
             </View>
 
-            {/* Status Badge on the Right */}
+            {/* Status Badge on Right */}
             <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}> 
-                {/* '20' adds transparency to the background color */}
                 <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
                     {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
                 </Text>
             </View>
-        </TouchableOpacity>
+        </View>
     );
 };
 
@@ -115,27 +117,25 @@ export default function Upcoming() {
     const { isAuthenticated } = useAuth();
 
     useEffect(() => {
-        if (isAuthenticated && isFocused) {
-            fetchSchedules();
-        }
+    let interval: any;
+    if (isAuthenticated && isFocused) {
+    fetchSchedules();
+    // Poll every 5 seconds for changes
+    interval = setInterval(fetchSchedules, 5000);
+    }
+    return () => {
+    if (interval) clearInterval(interval);
+    };
     }, [isFocused, isAuthenticated]);
 
     const fetchSchedules = async () => {
         try {
-            // Only show loader if we have no data yet
             if (schedules.length === 0) setIsLoading(true);
-            
             const response = await getUpcomingSchedules();
-            // console.log("Schedules:", response.data);
-
-            // Safety check for array
             const scheduleData = response.data.schedules || response.data || [];
-            
-            // Sort by date (nearest first)
             const sorted = Array.isArray(scheduleData) 
                 ? scheduleData.sort((a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
                 : [];
-
             setSchedules(sorted);
         } catch (error) {
             console.error("Failed to fetch upcoming schedules:", error);
@@ -145,7 +145,7 @@ export default function Upcoming() {
     };
 
     if (isLoading && schedules.length === 0) {
-        return <ActivityIndicator color="#fff" style={{ marginVertical: 40 }} />;
+        return <ActivityIndicator color="#fff" style={{ marginVertical: 40  }} />;
     }
 
     if (schedules.length === 0) {
@@ -161,13 +161,12 @@ export default function Upcoming() {
             data={schedules}
             renderItem={({ item }) => <ScheduleCard item={item} />}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }} // Removed horizontal padding to match screenshot width
-            scrollEnabled={false} // Assuming this is inside a ScrollView
+            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
+            scrollEnabled={false}
         />
     );
 }
 
-// --- Styles ---
 const styles = StyleSheet.create({
     emptyContainer: {
         alignItems: 'center',
@@ -175,6 +174,7 @@ const styles = StyleSheet.create({
         paddingVertical: 30,
         backgroundColor: '#1B2236',
         borderRadius: 12,
+        marginHorizontal: 20,
         marginTop: 10,
         borderWidth: 1,
         borderColor: '#233055'
@@ -227,12 +227,28 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: '500',
     },
+    // --- Join Button Styles ---
+    joinBtn: {
+        alignSelf: 'flex-start',
+        marginTop: 10,
+        backgroundColor: '#306BFF',
+        borderRadius: 8,
+        paddingVertical: 7,
+        paddingHorizontal: 15,
+        elevation: 2,
+    },
+    joinBtnText: {
+        color: '#fff',
+        fontWeight: '700',
+        fontSize: 14,
+        letterSpacing: 0.5,
+    },
     statusBadge: {
         paddingVertical: 4,
         paddingHorizontal: 8,
         borderRadius: 6,
         marginLeft: 8,
-        alignSelf: 'flex-start', // Aligns badge to top-right roughly
+        alignSelf: 'flex-start',
     },
     statusText: {
         fontSize: 11,

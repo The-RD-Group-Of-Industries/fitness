@@ -20,6 +20,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean; 
   user: User|null;
+  setUser: (user: User | null) => void;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -53,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Make sure response.data.user actually exists before trying to set it.
         if (userData && userData.id) {
           console.log("5. User object found in response. Setting user state.");
-          setUser(response.data); // This is the goal
+          setUser(userData); // This is the goal
           setIsAuthenticated(true);
           router.replace("/(tabs)");
         } else {
@@ -103,19 +104,32 @@ const login = async (email: string, password: string) => {
 };
 
 
-  const register = async (name: string, email: string, password: string) => {
+const register = async (name: string, email: string, password: string) => {
     try {
-      // Call your API helper
-      const response = await registerUser({ name, email, password });
-      await SecureStore.getItemAsync("token");
-      setUser(response.data.user);
-      setIsAuthenticated(true);
-      // router.replace("/(tabs)");
+        // 1. Call API
+        const response = await registerUser({ name, email, password });
+        console.log("REGISTER RESPONSE DATA:", JSON.stringify(response.data, null, 2));
+        // 2. GET Token and User from response
+        const { token, user } = response.data;
+
+        if (!token) {
+            throw new Error("No token received from registration API");
+        }
+
+        // 3. SAVE Token to SecureStore (CRITICAL STEP)
+        await SecureStore.setItemAsync("token", token);
+
+        // 4. Update Context State
+        setUser(user);
+        setIsAuthenticated(true);
+        alert('Success Registration successful!');
+        router.replace("/(tabs)"); // Optional, usually handled by the UI calling this
     } catch (error) {
-      console.error("Registration failed:", error);
-      throw error;
+        console.error("Registration failed:", error);
+        throw error;
     }
-  };
+};
+
 
   const logout = async () => {
     try {
@@ -129,7 +143,7 @@ const login = async (email: string, password: string) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated,isLoading, user, login, register, logout, checkAuth }}>
+    <AuthContext.Provider value={{ isAuthenticated,isLoading, user, login, register, logout, checkAuth,setUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -7,10 +7,10 @@ import {
     Alert,
     Platform,
     ActivityIndicator,
-    Modal // Import Modal
+    Modal
 } from "react-native";
 import React, { useState } from "react";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { ThemedView } from "@/components/ThemedView";
@@ -18,7 +18,6 @@ import { createSchedule } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams } from 'expo-router';
 
 // ---------- Types ----------
 interface User {
@@ -60,15 +59,15 @@ export default function Session() {
     const [startTime, setStartTime] = useState(new Date());
     const [sessionType, setSessionType] = useState(sessionTypes[0].value);
     const [loading, setLoading] = useState(false);
-    
+
     // --- State for the custom picker modal ---
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [pickerMode, setPickerMode] = useState<'date' | 'time'>('date');
     const [tempDate, setTempDate] = useState(new Date());
 
     if (!user) return <ActivityIndicator style={{ flex: 1, backgroundColor: '#090E26' }} size="large" color="#fff" />;
-    
-    // --- Handlers for opening the modal ---
+
+    // --- Handlers for opening the picker ---
     const openDatePicker = () => {
         setTempDate(date);
         setPickerMode('date');
@@ -81,88 +80,108 @@ export default function Session() {
         setIsPickerVisible(true);
     };
 
-    // --- Handler for when the picker value changes ---
-    const onPickerChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    // --- Handler for iOS Picker Change (Internal State) ---
+    const onIOSPickerChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         if (selectedDate) {
             setTempDate(selectedDate);
         }
     };
-    
-    // --- Handler for the "Confirm" button in the modal ---
-// --- Handler for the "Confirm" button in the modal ---
-const onPickerConfirm = () => {
-    if (pickerMode === 'date') {
-        const selectedDate = tempDate;
-        // Validate the selected date
-        if (selectedDate < today) {
-            Alert.alert("Invalid Date", "You cannot select a date in the past.");
-            return;
-        }
-        
-        // Update the main date state
-        setDate(selectedDate);
 
-        // --- FIX ---
-        // Also update the date portion of the startTime state to keep them in sync.
-        const newStartTime = new Date(startTime);
-        newStartTime.setFullYear(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
-
-        // Final check to ensure the resulting time isn't in the past (e.g., if today's time is later)
-        if (newStartTime < new Date()) {
-            setStartTime(newStartTime); // Update the time so the user sees the change...
-            Alert.alert("Time in Past", "The selected time is in the past for this date. Please select a new time.");
-        } else {
-            setStartTime(newStartTime);
-        }
-
+    // --- Handler for Android Native Picker ---
+    const onAndroidPickerChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+        // On Android, we close the picker immediately
         setIsPickerVisible(false);
 
-    } else { // pickerMode is 'time'
-        const selectedTime = tempDate;
+        if (event.type === 'set' && selectedDate) {
+            if (pickerMode === 'date') {
+                // Validate Date
+                if (selectedDate < today) {
+                    Alert.alert("Invalid Date", "You cannot select a date in the past.");
+                    return;
+                }
+                setDate(selectedDate);
+                
+                // Sync the date part of startTime
+                const newStartTime = new Date(startTime);
+                newStartTime.setFullYear(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+                
+                if (newStartTime < new Date()) {
+                    setStartTime(newStartTime);
+                    Alert.alert("Time Update", "The date changed, so the time was updated. Please check if the time is correct.");
+                } else {
+                    setStartTime(newStartTime);
+                }
+            } else {
+                // Handle Time Selection
+                const proposedStartTime = new Date(date);
+                proposedStartTime.setHours(selectedDate.getHours());
+                proposedStartTime.setMinutes(selectedDate.getMinutes());
+                proposedStartTime.setSeconds(0, 0);
 
-        // --- FIX ---
-        // Create the full proposed date-time by combining the date from state with the time from the picker.
-        const proposedStartTime = new Date(date); 
-        proposedStartTime.setHours(selectedTime.getHours());
-        proposedStartTime.setMinutes(selectedTime.getMinutes());
-        proposedStartTime.setSeconds(0, 0);
-
-        // Now, validate this complete date-time against the current moment.
-        if (proposedStartTime < new Date()) {
-            Alert.alert("Invalid Time", "You cannot select a time in the past for the chosen date.");
-            return; // Validation failed, do not close the picker.
+                if (proposedStartTime < new Date()) {
+                    Alert.alert("Invalid Time", "You cannot select a time in the past.");
+                    return;
+                }
+                setStartTime(proposedStartTime);
+            }
         }
+    };
 
-        // If validation is successful, update the startTime state with the complete, correct date-time.
-        setStartTime(proposedStartTime);
-        setIsPickerVisible(false);
-    }
-};
+    // --- Handler for iOS "Confirm" button ---
+    const onIOSConfirm = () => {
+        if (pickerMode === 'date') {
+            const selectedDate = tempDate;
+            if (selectedDate < today) {
+                Alert.alert("Invalid Date", "You cannot select a date in the past.");
+                return;
+            }
+            setDate(selectedDate);
 
-// console.log("SENDING TRAINER ID:", trainerId);
+            const newStartTime = new Date(startTime);
+            newStartTime.setFullYear(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+
+            if (newStartTime < new Date()) {
+                setStartTime(newStartTime);
+                Alert.alert("Time in Past", "The selected time is in the past for this date. Please select a new time.");
+            } else {
+                setStartTime(newStartTime);
+            }
+            setIsPickerVisible(false);
+
+        } else { // time
+            const selectedTime = tempDate;
+            const proposedStartTime = new Date(date);
+            proposedStartTime.setHours(selectedTime.getHours());
+            proposedStartTime.setMinutes(selectedTime.getMinutes());
+            proposedStartTime.setSeconds(0, 0);
+
+            if (proposedStartTime < new Date()) {
+                Alert.alert("Invalid Time", "You cannot select a time in the past for the chosen date.");
+                return;
+            }
+            setStartTime(proposedStartTime);
+            setIsPickerVisible(false);
+        }
+    };
 
     const handleSubmit = async () => {
         if (!trainerId) {
             Alert.alert("Error", "Trainer ID is missing. Please go back and try again.");
             return;
         }
-        console.log("trainer id in session",trainerId);
-        // console.log("userid in session",user.id);
+
         try {
             setLoading(true);
-
-            // Find the full session type object to get its title for the description
             const selectedSession = sessionTypes.find(s => s.value === sessionType);
 
-            // This new payload matches what the backend API needs
             const payload = {
                 date: date.toISOString(),
                 startTime: startTime.toISOString(),
                 endTime: new Date(startTime.getTime() + 3600000).toISOString(),
-                scheduleSubject: "Training Session", // This is a required field on the backend
+                scheduleSubject: "Training Session",
                 scheduleDescription: `A ${selectedSession?.title || 'training'} session booking.`,
                 sessionType: sessionType,
-                trainerId: trainerId, 
+                trainerId: trainerId,
             };
 
             await createSchedule(payload);
@@ -170,7 +189,7 @@ const onPickerConfirm = () => {
             Alert.alert("Success", "Your session request has been sent!", [
                 { text: "OK", onPress: () => router.push("/(tabs)") },
             ]);
-        } catch (error:any) {
+        } catch (error: any) {
             const errorMessage = error.response?.data?.error || "Failed to send your request. Please try again.";
             console.error("Failed to schedule session:", error);
             Alert.alert("Error", errorMessage);
@@ -211,7 +230,7 @@ const onPickerConfirm = () => {
                             <Text style={styles.dateTimeValue}>{formatTime(new Date(startTime.getTime() + 3600000))} (+60min)</Text>
                         </View>
                     </DisplayBox>
-                    
+
                     <DisplayBox title="Session Type" long>
                         {sessionTypes.map((type) => (
                             <TouchableOpacity
@@ -233,30 +252,43 @@ const onPickerConfirm = () => {
                 </View>
             </ScrollView>
 
-            {/* ---- Custom Picker Modal ---- */}
-            <Modal
-                transparent={true}
-                visible={isPickerVisible}
-                animationType="fade"
-                onRequestClose={() => setIsPickerVisible(false)}
-            >
-                <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setIsPickerVisible(false)}>
-                    <View style={styles.modalCard}>
-                        <Text style={styles.modalTitle}>{pickerMode === 'date' ? 'Select Date' : 'Select Time'}</Text>
-                        <DateTimePicker
-                            value={tempDate}
-                            mode={pickerMode}
-                            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                            onChange={onPickerChange}
-                            textColor={Platform.OS === 'ios' ? '#fff' : undefined}
-                            minimumDate={today}
-                        />
-                        <TouchableOpacity style={styles.confirmButton} onPress={onPickerConfirm}>
-                            <Text style={styles.confirmButtonText}>Confirm</Text>
-                        </TouchableOpacity>
-                    </View>
-                </TouchableOpacity>
-            </Modal>
+            {/* ----- IOS PICKER (Modal) ----- */}
+            {Platform.OS === 'ios' && (
+                <Modal
+                    transparent={true}
+                    visible={isPickerVisible}
+                    animationType="fade"
+                    onRequestClose={() => setIsPickerVisible(false)}
+                >
+                    <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setIsPickerVisible(false)}>
+                        <View style={styles.modalCard}>
+                            <Text style={styles.modalTitle}>{pickerMode === 'date' ? 'Select Date' : 'Select Time'}</Text>
+                            <DateTimePicker
+                                value={tempDate}
+                                mode={pickerMode}
+                                display="spinner"
+                                onChange={onIOSPickerChange}
+                                textColor="#fff"
+                                minimumDate={today}
+                            />
+                            <TouchableOpacity style={styles.confirmButton} onPress={onIOSConfirm}>
+                                <Text style={styles.confirmButtonText}>Confirm</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </TouchableOpacity>
+                </Modal>
+            )}
+
+            {/* ----- ANDROID PICKER (Native Dialog) ----- */}
+            {Platform.OS === 'android' && isPickerVisible && (
+                <DateTimePicker
+                    value={pickerMode === 'date' ? date : startTime}
+                    mode={pickerMode}
+                    display="default"
+                    onChange={onAndroidPickerChange}
+                    minimumDate={today}
+                />
+            )}
         </ThemedView>
     );
 }
@@ -268,9 +300,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: "#090E26",
         paddingHorizontal: 20,
-        paddingVertical: -30, // Added explicit vertical padding for header
+        paddingVertical: -30,
         borderBottomWidth: 1,
-        borderBottomColor: '#1B2236' // Optional: Adds a subtle line separator
+        borderBottomColor: '#1B2236'
     },
     backBtn: {
         width: 40,
@@ -288,19 +320,19 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 18,
         fontWeight: "700",
-        marginRight: 40, // Balances the back button width
+        marginRight: 40,
     },
-    pageContent: { 
-        paddingHorizontal: 20, 
-        paddingTop: 8,    // REDUCED from default padding
+    pageContent: {
+        paddingHorizontal: 20,
+        paddingTop: 8,
         paddingBottom: 40,
-        gap: 15            // REDUCED GAP from 22 to 15
+        gap: 15
     },
-    heading: { 
-        fontSize: 24,      // Slightly smaller to fit better
-        fontWeight: "800", 
+    heading: {
+        fontSize: 24,
+        fontWeight: "800",
         color: "white",
-        marginBottom: 5    // Small margin instead of relying on parent gap
+        marginBottom: 5
     },
     box: {
         padding: 14,
@@ -338,8 +370,8 @@ const styles = StyleSheet.create({
     dateTimeValue: { fontWeight: "700", color: "white", fontSize: 15 },
     button: { width: "100%", paddingVertical: 16, borderRadius: 10, marginTop: 10 },
     btnText: { color: "white", fontWeight: "700", fontSize: 18, textAlign: 'center' },
-    
-    // Modal Styles (Keep existing ones)
+
+    // Modal Styles
     modalBackdrop: {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
@@ -372,4 +404,3 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
 });
-

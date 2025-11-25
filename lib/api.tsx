@@ -5,6 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 export const apiClient = axios.create({
   // Use the environment variable for the base URL
   baseURL: process.env.EXPO_PUBLIC_API_URL, 
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
