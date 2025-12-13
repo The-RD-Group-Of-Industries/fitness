@@ -108,7 +108,7 @@ const register = async (name: string, email: string, password: string) => {
     try {
         // 1. Call API
         const response = await registerUser({ name, email, password });
-        console.log("REGISTER RESPONSE DATA:", JSON.stringify(response.data, null, 2));
+        // console.log("REGISTER RESPONSE DATA:", JSON.stringify(response.data, null, 2));
         // 2. GET Token and User from response
         const { token, user } = response.data;
 

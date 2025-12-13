@@ -9,9 +9,9 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.fitness.evolution.app",
+      "bundleIdentifier": "com.vikram.fitnessevolution",
       "icon": "./assets/images/icon.png",
-      "buildNumber": "8.1.8",
+      "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -22,7 +22,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.fitness.evolution"
+      "package": "com.vikram.fitnessevolution",
+      "versionCode": 5
     },
     "web": {
       "bundler": "metro",
@@ -76,7 +77,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "4c3f9986-5ae4-4500-a96c-c36b5b28d9e4"
+        "projectId": "6d6450f7-8c15-4c6d-a951-6af6615f4ee4"
       }
     },
     "platforms": [

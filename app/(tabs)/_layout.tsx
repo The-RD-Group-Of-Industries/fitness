@@ -1,20 +1,29 @@
 import { Tabs } from "expo-router";
 import React from "react";
 import { Ionicons, FontAwesome, FontAwesome6 } from "@expo/vector-icons";
+// 1. Import the safe area hook
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabLayout() {
+  // 2. Get the safe area insets (this contains the height of the system navigation bar)
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
-        headerShown: false, // Hide headers by default
+        headerShown: false,
         tabBarActiveTintColor: '#ffffff',
         tabBarInactiveTintColor: 'gray',
         tabBarStyle: {
           backgroundColor: '#090E21',
           borderTopWidth: 0,
-          elevation: 0, // Android shadow removal
-          height: 60,   // Optional: Give it a bit more height
-          paddingBottom: 8,
+          elevation: 0,
+          // 3. Dynamically set height: Base height (60) + System Navigation Bar height
+          height: 60 + insets.bottom,
+          // 4. Dynamically set padding: Push content up above the System Navigation Bar
+          // We add a small buffer (5px) so it's not glued to the very bottom
+          paddingBottom: insets.bottom + 5,
+          paddingTop: 5, // Add a little top padding to center the icons vertically
         },
         tabBarLabelStyle: {
            fontSize: 12,
