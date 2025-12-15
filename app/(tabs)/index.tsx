@@ -4,7 +4,6 @@ import {
     Text,
     StyleSheet,
     TouchableOpacity,
-    SafeAreaView,
     ScrollView,
     Dimensions,
     FlatList,
@@ -12,11 +11,13 @@ import {
     Image,
     Alert
 } from 'react-native';
+// 1. Import useSafeAreaInsets instead of SafeAreaView wrapper
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedView } from '@/components/ThemedView';
 import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { getAllTrainers, apiClient } from '@/lib/api'; // Ensure apiClient is imported
+import { getAllTrainers, apiClient } from '@/lib/api'; 
 import Upcoming from '@/components/main/Upcoming';
 import { useAuth } from '@/context/AuthContext';
 
@@ -33,11 +34,14 @@ interface Trainer {
 export default function HomeScreen() {
     const router = useRouter();
     const { isAuthenticated } = useAuth();
+    // 2. Get safe area insets
+    const insets = useSafeAreaInsets();
+    
     const [trainers, setTrainers] = useState<Trainer[]>([]);
     const [featuredTrainerId, setFeaturedTrainerId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isStartingChat, setIsStartingChat] = useState(false); // Loading state for chat
+    const [isStartingChat, setIsStartingChat] = useState(false);
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -60,13 +64,12 @@ export default function HomeScreen() {
         }
     }, [isAuthenticated]);
 
-    // --- NEW: Start Chat Function ---
+    // ... (handleStartChat function remains the same)
     const handleStartChat = async (trainerId: string, trainerName: string) => {
         if (isStartingChat) return;
         setIsStartingChat(true);
 
         try {
-            // Call backend to create or get existing chat
             const response = await apiClient.post('/api/mobile/chat/create', {
                 trainerId: trainerId
             });
@@ -74,7 +77,6 @@ export default function HomeScreen() {
             const chat = response.data.chat;
 
             if (chat && chat.id) {
-                // Navigate to Chat Screen
                 router.push({
                     pathname: "/chat/[id]",
                     params: { 
@@ -110,22 +112,18 @@ export default function HomeScreen() {
             }
         },
         {
-            title: "My Chats", // Renamed for clarity
+            title: "My Chats",
             Icon: "wechat",
             background: { stop_1: "teal", stop_2: "seagreen" },
-            onClick: () => router.push("/chat") // Goes to Chat List
+            onClick: () => router.push("/chat")
         },
     ];
 
-    // --- Updated Trainer Card with Chat Button ---
     const TrainerCard = ({ trainer }: { trainer: Trainer }) => (
         <TouchableOpacity 
             activeOpacity={0.9}
             style={styles.trainerCard}
-            onPress={() => {
-                // Optional: Clicking card opens profile, or starts chat directly
-                handleStartChat(trainer.id, trainer.name || 'Trainer');
-            }}
+            onPress={() => handleStartChat(trainer.id, trainer.name || 'Trainer')}
         >
             {trainer.image ? (
                 <Image source={{ uri: trainer.image }} style={styles.trainerImage} />
@@ -137,7 +135,6 @@ export default function HomeScreen() {
             <Text style={styles.trainerName} numberOfLines={1}>{trainer.name || 'Trainer'}</Text>
             <Text style={styles.trainerSpec} numberOfLines={1}>{trainer.specialization || 'Fitness'}</Text>
             
-            {/* Mini Chat Button inside Card */}
             <TouchableOpacity 
                 style={styles.chatMiniBtn}
                 onPress={() => handleStartChat(trainer.id, trainer.name || 'Trainer')}
@@ -164,63 +161,64 @@ export default function HomeScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <ThemedView style={styles.container}>
-                <ScrollView showsVerticalScrollIndicator={false}>
-                    {/* Header */}
-                    <View style={styles.header}>
-                        <Text style={styles.title}>Welcome to Fitness Evolution</Text>
-                        <Text style={styles.subtitle}>
-                            Your personal guide to achieving your fitness goals. Book sessions and chat directly with your trainer.
-                        </Text>
-                    </View>
+        // 3. Replaced SafeAreaView with ThemedView and added manual top padding
+        <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
+            <ScrollView 
+                showsVerticalScrollIndicator={false}
+                // 4. Added bottom padding to fix the cut-off issue
+                contentContainerStyle={{ paddingBottom: 100 }}
+            >
+                {/* Header */}
+                <View style={styles.header}>
+                    <Text style={styles.title}>Welcome to Fitness Evolution</Text>
+                    <Text style={styles.subtitle}>
+                        Your personal guide to achieving your fitness goals. Book sessions and chat directly with your trainer.
+                    </Text>
+                </View>
 
-                    {/* Action Buttons */}
-                    <View style={styles.buttonRow}>
-                        {buttonData.map((item, index) => (
-                            <TouchableOpacity onPress={item.onClick} key={index} activeOpacity={0.85}>
-                                <LinearGradient
-                                    colors={[item.background.stop_1, item.background.stop_2]}
-                                    start={{ x: 1, y: 0 }}
-                                    end={{ x: 0, y: 0.4 }}
-                                    style={styles.box}
-                                >
-                                    <FontAwesome name={item.Icon as any} size={36} color="white" />
-                                    <Text style={styles.boxText}>{item.title}</Text>
-                                </LinearGradient>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                {/* Action Buttons */}
+                <View style={styles.buttonRow}>
+                    {buttonData.map((item, index) => (
+                        <TouchableOpacity onPress={item.onClick} key={index} activeOpacity={0.85}>
+                            <LinearGradient
+                                colors={[item.background.stop_1, item.background.stop_2]}
+                                start={{ x: 1, y: 0 }}
+                                end={{ x: 0, y: 0.4 }}
+                                style={styles.box}
+                            >
+                                <FontAwesome name={item.Icon as any} size={36} color="white" />
+                                <Text style={styles.boxText}>{item.title}</Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    ))}
+                </View>
 
-                    {/* Featured Trainers */}
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Featured Trainers</Text>
-                        {renderFeaturedTrainers()}
-                    </View>
+                {/* Featured Trainers */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Featured Trainers</Text>
+                    {renderFeaturedTrainers()}
+                </View>
 
-                    {/* Upcoming Sessions */}
-                    <View style={styles.section}>
-                         <Text style={styles.sectionTitle}>Upcoming</Text>
-                         <Upcoming />
-                    </View>
+                {/* Upcoming Sessions */}
+                <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Upcoming</Text>
+                        <Upcoming />
+                </View>
 
-                </ScrollView>
-                
-                {/* Global Loading Overlay (Optional) */}
-                {isStartingChat && (
-                    <View style={styles.loadingOverlay}>
-                        <ActivityIndicator size="large" color="#fff" />
-                    </View>
-                )}
-            </ThemedView>
-        </SafeAreaView>
+            </ScrollView>
+            
+            {isStartingChat && (
+                <View style={styles.loadingOverlay}>
+                    <ActivityIndicator size="large" color="#fff" />
+                </View>
+            )}
+        </ThemedView>
     );
 }
 
 const styles = StyleSheet.create({
-    safeArea: { flex: 1, backgroundColor: '#070F2B' },
-    container: { flex: 1 },
-    header: { paddingHorizontal: 20, paddingBottom: 30 },
+    container: { flex: 1, backgroundColor: '#070F2B' },
+    header: { paddingHorizontal: 20, paddingBottom: 30, paddingTop: 25 },
     title: { fontSize: 28, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8 },
     subtitle: { fontSize: 16, color: '#A0AEC0', lineHeight: 24 },
     buttonRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20 },
@@ -239,10 +237,9 @@ const styles = StyleSheet.create({
     section: {},
     sectionTitle: { fontSize: 22, fontWeight: 'bold', color: 'white', marginBottom: 15, paddingHorizontal: 20, marginTop: 15 },
     
-    // Trainer Card Styles
     trainerCard: {
         width: 140,
-        height: 210, // Increased height for button
+        height: 210,
         backgroundColor: '#1B2236',
         borderRadius: 12,
         marginRight: 15,
