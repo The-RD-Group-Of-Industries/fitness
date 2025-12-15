@@ -80,7 +80,7 @@ export default function ChatListScreen() {
     );
   };
 
-  if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#306BFF" /></View>;
+  if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#FFFFFF" /></View>;
 
   return (
     <SafeAreaView style={styles.safeArea}>

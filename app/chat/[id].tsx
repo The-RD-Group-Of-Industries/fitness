@@ -9,9 +9,9 @@ import {
   Platform, 
   StyleSheet, 
   ActivityIndicator,
-  SafeAreaView,
   StatusBar 
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
@@ -62,7 +62,7 @@ export default function ChatScreen() {
     const tempMessage: Message = {
       id: Date.now().toString(),
       content: tempContent,
-      sender: { id: user?.id || 'me', name: user?.name || 'Me' },
+      sender: { id: user?.id || 'me', name: user?.fullName || 'Me' },
       createdAt: new Date().toISOString()
     };
     setMessages(prev => [...prev, tempMessage]);
@@ -91,7 +91,7 @@ export default function ChatScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <StatusBar barStyle="light-content" backgroundColor="#070F2B" />
       
       {/* Custom Header */}
@@ -106,7 +106,7 @@ export default function ChatScreen() {
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : undefined} 
         style={styles.container}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
         {loading ? (
           <View style={styles.center}>
@@ -143,7 +143,7 @@ export default function ChatScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#070F2B', paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+  safeArea: { flex: 1, backgroundColor: '#070F2B' },
   container: { flex: 1, backgroundColor: '#070F2B' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   // Input
   inputContainer: { 
     flexDirection: 'row', 
-    padding: 10, 
+    padding: 18, 
     backgroundColor: '#1B2236', 
     alignItems: 'center',
     borderTopWidth: 1,

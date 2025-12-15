@@ -20,7 +20,7 @@
       "hardwareAccelerated": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#090E21"
       },
       "package": "com.vikram.fitnessevolution",
       "versionCode": 5
