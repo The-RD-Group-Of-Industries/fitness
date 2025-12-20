@@ -2,16 +2,16 @@
   "expo": {
     "name": "Fitness Evolution",
     "slug": "fitness",
-    "version": "8.11.4",
+    "version": "8.11.5",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.vikram.fitnessevolution",
+      "bundleIdentifier": "com.fitness.evolution.app",
       "icon": "./assets/images/icon.png",
-      "buildNumber": "1",
+      "buildNumber": "4",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -23,7 +23,7 @@
         "backgroundColor": "#090E21"
       },
       "package": "com.vikram.fitnessevolution",
-      "versionCode": 5
+      "versionCode": 6
     },
     "web": {
       "bundler": "metro",
