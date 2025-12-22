@@ -40,6 +40,9 @@ export const registerUser = (userData:any) => {
 export const loginUser = (credentials:any) => {
   return apiClient.post('/api/mobile/auth/login', credentials);
 };
+export const handleOtp = (credentials:any) => {
+  return apiClient.post('/api/mobile/auth/verify', credentials);
+};
 
 export const verifyEmail = (email:string) => {
   return apiClient.get(`/v0/api/user/verify-email?email=${email}`);

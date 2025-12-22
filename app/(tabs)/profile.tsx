@@ -182,7 +182,7 @@ const TabTwoScreen: React.FC = () => {
 
               <View style={styles.boxText}>
                 <Text style={styles.name} numberOfLines={1}>
-                  {user?.name || "Guest"}
+                  {user?.fullName || "Guest"}
                 </Text>
                 <Text style={styles.email} numberOfLines={1}>
                   {user?.email}

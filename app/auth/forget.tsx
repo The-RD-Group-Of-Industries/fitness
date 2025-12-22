@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native"
 import { useState } from "react"
 import { Stack, useRouter } from "expo-router"
-import axios from "axios"
+import { handleOtp } from "@/lib/api"
 
 export default function LoginScreen() {
   const router = useRouter()
@@ -14,9 +14,8 @@ export default function LoginScreen() {
     }
     try {
       setLoading(true)
-      const check = await axios.post("https://fitness-admin-tau.vercel.app/api/mobile/auth/verify", {
-        email: email
-      })
+      const check = await handleOtp({email});
+      console.log("check in forget password",check);
       if (check.status === 200) {
         if (check.data.user) {
           router.push({
