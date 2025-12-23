@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native"
 import { useState } from "react"
 import { Stack, useRouter, useLocalSearchParams } from "expo-router"
-import axios from "axios"
+import { changePass } from "@/lib/api"
 
 export default function OTPSCREEN() {
   const router = useRouter()
@@ -9,31 +9,52 @@ export default function OTPSCREEN() {
   const [Password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const ChangePassword = async () => {
-    try {
-      setLoading(true)
-      const check = await axios.post("https://fitness-admin-tau.vercel.app/api/mobile/auth/changepass", {
-        email: email,
-        password: Password
-      })
-      console.log(check.status)
-      console.log(check.data)
-      if (check.status === 200) {
-        if (check.data.status === "success") {
-          alert("Password Changed Successfully!")
-          router.push({
-            pathname: "/auth/login"
-          })
-        }
+//   const ChangePassword = async () => {
+//     try {
+//       setLoading(true)
+//       const check = await changePass({
+//         email: email,
+//         password: Password
+//       })
+//       console.log(check.status)
+//       // console.log(check.data)
+//       if (check.status === 200) {
+//         alert("Password Changed Successfully!")
+//         router.replace("/auth/login");
+//     }
+//   }
+//     catch (e) {
+//       console.log("error in recover",e);
+//       alert("Something went wrong, Please try again later!")
+//     }
+//     finally {
+//       setLoading(false)
+//     }
+// }
+const ChangePassword = async () => {
+  try {
+    setLoading(true);
+
+    const check = await changePass({
+      email,
+      password: Password,
+    });
+    console.log("change password is calles after backend reuqest")
+    console.log("changePass response:", check);        // <– log whole object
+    console.log("status:", check?.status);
+
+    if (check?.status === 200) {
+      alert("Password Changed Successfully!");
+      router.replace("/auth/login");
     }
+  } catch (e: any) {
+    console.log("error in recover", e?.response?.status, e?.response?.data || e);
+    alert("Something went wrong, Please try again later!");
+  } finally {
+    setLoading(false);
   }
-    catch (e) {
-      alert("Something went wrong, Please try again later!")
-    }
-    finally {
-      setLoading(false)
-    }
-}
+};
+
   return (
 
     <View style={styles.container}>

@@ -43,6 +43,12 @@ export const loginUser = (credentials:any) => {
 export const handleOtp = (credentials:any) => {
   return apiClient.post('/api/mobile/auth/verify', credentials);
 };
+export const sendingMail = (credentials:any) => {
+  return apiClient.post('/api/mobile/auth/sendotp', credentials);
+};
+export const changePass = (credentials:any) => {
+  return apiClient.post('/api/mobile/auth/changepass', credentials);
+};
 
 export const verifyEmail = (email:string) => {
   return apiClient.get(`/v0/api/user/verify-email?email=${email}`);

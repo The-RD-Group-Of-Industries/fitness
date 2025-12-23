@@ -17,12 +17,16 @@ export default function LoginScreen() {
       const check = await handleOtp({email});
       console.log("check in forget password",check);
       if (check.status === 200) {
-        if (check.data.user) {
-          router.push({
+       router.push({
             pathname: "/auth/otp",
             params: { email: email }
-          })
-        }
+           })
+        // if (check.data.user) {
+        //   router.push({
+        //     pathname: "/auth/otp",
+        //     params: { email: email }
+        //   })
+        // }
       }
       }
       catch (e) {

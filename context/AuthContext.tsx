@@ -95,7 +95,7 @@ const login = async (email: string, password: string) => {
 
     // 4. Update auth state and navigate
     setIsAuthenticated(true);
-    // router.replace("/(tabs)");
+    router.replace("/(tabs)");
 
   } catch (error) {
     console.error("Login failed:", error);
@@ -123,9 +123,10 @@ const register = async (name: string, email: string, password: string) => {
         setUser(user);
         setIsAuthenticated(true);
         alert('Success Registration successful!');
-        router.replace("/(tabs)"); // Optional, usually handled by the UI calling this
-    } catch (error) {
-        console.error("Registration failed:", error);
+        router.replace("/(tabs)");
+    } catch (error:any) {
+          const message = error?.response?.data?.error || 'Something went wrong';
+          alert(message);
         throw error;
     }
 };
