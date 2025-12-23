@@ -15,7 +15,7 @@ export default function LoginScreen() {
     try {
       setLoading(true)
       const check = await handleOtp({email});
-      console.log("check in forget password",check);
+      // console.log("check in forget password",check);
       if (check.status === 200) {
        router.push({
             pathname: "/auth/otp",
