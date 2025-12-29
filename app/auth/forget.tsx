@@ -1,7 +1,9 @@
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react"
 import { Stack, useRouter } from "expo-router"
 import { handleOtp } from "@/lib/api"
+import { Ionicons } from '@expo/vector-icons'; 
 
 export default function LoginScreen() {
   const router = useRouter()
@@ -15,36 +17,31 @@ export default function LoginScreen() {
     try {
       setLoading(true)
       const check = await handleOtp({email});
-      // console.log("check in forget password",check);
       if (check.status === 200) {
-       router.push({
+        router.push({
             pathname: "/auth/otp",
             params: { email: email }
-           })
-        // if (check.data.user) {
-        //   router.push({
-        //     pathname: "/auth/otp",
-        //     params: { email: email }
-        //   })
-        // }
+        })
       }
-      }
-      catch (e) {
+    } catch (e) {
       alert("Email Doesn't Exist") 
-    }
-    finally {
+    } finally {
       setLoading(false)
     }
   }
 
   return (
+    <SafeAreaView style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
 
-    <View style={styles.container}>
-    <Stack.Screen 
-      options={{
-        headerShown: false,
-      }}
-      />
+      {/* 2. Add the Back Button UI */}
+      <TouchableOpacity 
+        style={styles.backButton} 
+        onPress={() => router.back()}
+      >
+        <Ionicons name="arrow-back" size={24} color="#fff" />
+      </TouchableOpacity>
+
       <View style={styles.content}>
         <Text style={styles.title}>Recover Your Account</Text>
 
@@ -69,16 +66,9 @@ export default function LoginScreen() {
           >
             <Text style={styles.buttonText}>{loading ? "Sending" : "Send OTP"}</Text>
           </TouchableOpacity>
-
-          {/* <View style={styles.signupContainer}>
-            <Text style={styles.signupText}>New to Fitness Evolution?</Text>
-            <TouchableOpacity onPress={() => router.push("/auth/register")}>
-              <Text style={styles.signupLink}>Create an account</Text>
-            </TouchableOpacity>
-          </View> */}
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   )
 }
 
@@ -87,20 +77,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#090E21",
   },
+  backButton: {
+    position: 'absolute',
+    top: 50, 
+    left: 20,
+    zIndex: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#1C2139", 
+    justifyContent: "center",
+    alignItems: "center",
+  },
   content: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
-  },
-  iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: "#2A2E43",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 24,
   },
   title: {
     fontSize: 24,
@@ -128,35 +121,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
   },
-  optionsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: "#382eff",
-    marginRight: 8,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  checkboxChecked: {
-    backgroundColor: "#382eff",
-  },
-  checkboxLabel: {
-    color: "#fff",
-  },
-  forgotPassword: {
-    color: "#382eff",
-  },
   button: {
     backgroundColor: "#382eff",
     paddingVertical: 16,
@@ -170,17 +134,5 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "600",
-  },
-  signupContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 24,
-  },
-  signupText: {
-    color: "#9BA1A6",
-    marginRight: 4,
-  },
-  signupLink: {
-    color: "#382eff",
   },
 })

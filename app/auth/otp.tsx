@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { Stack, useRouter, useLocalSearchParams } from "expo-router";
 import { sendingMail } from "@/lib/api"; 
+import { SafeAreaView } from "react-native-safe-area-context"; // Correct library
+import { Ionicons } from '@expo/vector-icons';
 
 export default function OTPSCREEN() {
   const router = useRouter();
@@ -11,7 +13,7 @@ export default function OTPSCREEN() {
   const [generatedOtp, setGeneratedOtp] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(false);
 
-  // Generate OTP on backend and store same value on client to verify
+  // Generate OTP logic
   async function GenOtp() {
     try {
       const min = 10000;
@@ -24,15 +26,12 @@ export default function OTPSCREEN() {
       });
 
       if (res.status === 200) {
-        console.log("OTP sent successfully:", otp);
         return otp;
       } else {
-        console.log("Failed to send OTP:", res.status, res.data);
         alert("Failed to send OTP. Please try again.");
         return undefined;
       }
     } catch (error) {
-      console.log("Error sending OTP:", error);
       alert("Something went wrong while sending OTP.");
       return undefined;
     }
@@ -57,13 +56,11 @@ export default function OTPSCREEN() {
     }
 
     if (inp === generatedOtp) {
-      // OTP correct → go to reset‑password screen
       router.push({
         pathname: "/auth/recover",
         params: { email },
       });
     } else {
-      console.log("Entered / Generated:", inp, generatedOtp);
       alert("Invalid OTP, please check again.");
     }
   }
@@ -75,17 +72,22 @@ export default function OTPSCREEN() {
         setGeneratedOtp(otp);
       }
     };
-
     fetchOtp();
   }, []);
 
   return (
-    <View style={styles.container}>
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-      />
+    <SafeAreaView style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+
+      {/* Header View: Ensures the back button stays within safe boundaries */}
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#fff" />
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.content}>
         <Text style={styles.title}>Recover Your Account</Text>
@@ -127,28 +129,55 @@ export default function OTPSCREEN() {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#090E21" },
+  container: { 
+    flex: 1, 
+    backgroundColor: "#090E21" 
+  },
+  header: {
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 10,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#1C2139", // Matches theme
+    justifyContent: "center",
+    alignItems: "center",
+  },
   content: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
+    // Slight negative margin to compensate for header height and center form better
+    marginTop: -64, 
   },
   title: {
     fontSize: 24,
     fontWeight: "700",
     color: "#fff",
-    marginBottom: 4,
+    marginBottom: 8,
     textAlign: "center",
   },
-  form: { width: "100%", maxWidth: 400 },
-  inputContainer: { marginBottom: 20 },
-  label: { color: "#fff", marginBottom: 8, fontSize: 16 },
+  form: { 
+    width: "100%", 
+    maxWidth: 400 
+  },
+  inputContainer: { 
+    marginBottom: 20 
+  },
+  label: { 
+    color: "#fff", 
+    fontSize: 16 
+  },
   input: {
     backgroundColor: "#1C2139",
     borderRadius: 12,
@@ -162,6 +191,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
   },
-  buttonDisabled: { opacity: 0.7 },
-  buttonText: { color: "#fff", fontSize: 18, fontWeight: "600" },
+  buttonDisabled: { 
+    opacity: 0.7 
+  },
+  buttonText: { 
+    color: "#fff", 
+    fontSize: 18, 
+    fontWeight: "600" 
+  },
 });

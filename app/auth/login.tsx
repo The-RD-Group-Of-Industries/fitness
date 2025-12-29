@@ -1,10 +1,21 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native"
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TextInput, 
+  TouchableOpacity, 
+  KeyboardAvoidingView, 
+  Platform, 
+  ScrollView, 
+  TouchableWithoutFeedback, 
+  Keyboard 
+} from "react-native"
 import { useState } from "react"
 import { Stack, useRouter } from "expo-router"
 import { FontAwesome6 } from "@expo/vector-icons"
 import { useAuth } from "@/context/AuthContext"
 import Feather from '@expo/vector-icons/Feather';
-
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
   const router = useRouter()
@@ -27,82 +38,94 @@ export default function LoginScreen() {
   }
 
   return (
-
-    <View style={styles.container}>
-    <Stack.Screen 
-      options={{
-        headerShown: false,
-      }}
-      />
-      <View style={styles.content}>
-        <View style={styles.iconContainer}>
-          <FontAwesome6 name="dumbbell" size={40} color="#fff" />
-        </View>
-
-        <Text style={styles.title}>Welcome to Fitness Evolution</Text>
-
-        <View style={styles.form}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your email"
-              placeholderTextColor="#6B7280"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Password</Text>
-            <View style={styles.inputContainer_sec}>
-            <TextInput
-              style={[styles.input, styles.input_sec]}
-              placeholder="Enter your password"
-              placeholderTextColor="#6B7280"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={view ? false : true}
-              />
-        <TouchableOpacity style={styles.btn}>
-              {view ? <Feather name="eye-off" size={24} color="white" onPress={() => setView(!view)}/> :
-              <Feather name="eye" size={24} color="white" onPress={() => setView(!view)}/>}
-        </TouchableOpacity>
-              </View>
-          </View>
-
-          <View style={styles.optionsContainer}>
-            <TouchableOpacity style={styles.checkboxContainer} onPress={() => setRememberMe(!rememberMe)}>
-              <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                {rememberMe && <FontAwesome6 name="check" size={12} color="#fff" />}
-              </View>
-              <Text style={styles.checkboxLabel}>Remember me</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => router.push("/auth/forget")}>
-              <Text style={styles.forgotPassword}>Forgot password?</Text>
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={loading}
+    <SafeAreaView style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView 
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
           >
-            <Text style={styles.buttonText}>{loading ? "Logging in..." : "Login"}</Text>
-          </TouchableOpacity>
+            <View style={styles.content}>
+              <View style={styles.iconContainer}>
+                <FontAwesome6 name="dumbbell" size={40} color="#fff" />
+              </View>
 
-          <View style={styles.signupContainer}>
-            <Text style={styles.signupText}>New to Fitness Evolution?</Text>
-            <TouchableOpacity onPress={() => router.push("/auth/register")}>
-              <Text style={styles.signupLink}>Create an account</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </View>
+              <Text style={styles.title}>Welcome to Fitness Evolution</Text>
+
+              <View style={styles.form}>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Email</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your email"
+                    placeholderTextColor="#6B7280"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                  />
+                </View>
+
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Password</Text>
+                  <View style={styles.inputContainer_sec}>
+                    <TextInput
+                      style={[styles.input, styles.input_sec]}
+                      placeholder="Enter your password"
+                      placeholderTextColor="#6B7280"
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry={!view}
+                    />
+                    <TouchableOpacity 
+                      style={styles.btn}
+                      onPress={() => setView(!view)}
+                    >
+                      <Feather name={view ? "eye-off" : "eye"} size={24} color="white" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <View style={styles.optionsContainer}>
+                  <TouchableOpacity 
+                    style={styles.checkboxContainer} 
+                    onPress={() => setRememberMe(!rememberMe)}
+                  >
+                    <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                      {rememberMe && <FontAwesome6 name="check" size={12} color="#fff" />}
+                    </View>
+                    <Text style={styles.checkboxLabel}>Remember me</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={() => router.push("/auth/forget")}>
+                    <Text style={styles.forgotPassword}>Forgot password?</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity
+                  style={[styles.button, loading && styles.buttonDisabled]}
+                  onPress={handleLogin}
+                  disabled={loading}
+                >
+                  <Text style={styles.buttonText}>{loading ? "Logging in..." : "Login"}</Text>
+                </TouchableOpacity>
+
+                <View style={styles.signupContainer}>
+                  <Text style={styles.signupText}>New to Fitness Evolution?</Text>
+                  <TouchableOpacity onPress={() => router.push("/auth/register")}>
+                    <Text style={styles.signupLink}>Create an account</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   )
 }
 
@@ -111,11 +134,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#090E21",
   },
+  scrollContent: {
+    flexGrow: 1,
+  },
   content: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
+    paddingVertical: 40,
   },
   iconContainer: {
     width: 80,
@@ -130,6 +157,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#1C2139",
     borderRadius: 12,
     padding: 16,
+    justifyContent: "center",
+    alignItems: "center",
   },
   title: {
     fontSize: 24,
@@ -161,9 +190,10 @@ const styles = StyleSheet.create({
     padding: 16,
     color: "#fff",
     fontSize: 16,
+    flex: 1,
   },
   input_sec: {
-    width: "80%"
+    
   },
   optionsContainer: {
     flexDirection: "row",
@@ -221,6 +251,3 @@ const styles = StyleSheet.create({
     color: "#382eff",
   },
 })
-
-
-

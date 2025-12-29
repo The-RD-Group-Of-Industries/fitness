@@ -11,7 +11,6 @@ import {
     Image,
     Alert
 } from 'react-native';
-// 1. Import useSafeAreaInsets instead of SafeAreaView wrapper
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedView } from '@/components/ThemedView';
 import { useRouter } from 'expo-router';
