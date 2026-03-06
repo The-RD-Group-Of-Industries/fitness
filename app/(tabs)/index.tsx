@@ -100,14 +100,7 @@ export default function HomeScreen() {
             Icon: "clock-o",
             background: { stop_1: "#9616f2", stop_2: "#42009e" },
             onClick: () => {
-                if (featuredTrainerId) {
-                    router.push({
-                        pathname: "/session",
-                        params: { trainerId: featuredTrainerId }
-                    });
-                } else {
-                    alert("Trainer information is not available yet.");
-                }
+                router.push("/session"); 
             }
         },
         {
